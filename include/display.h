@@ -5,16 +5,20 @@
 #include <string>
 
 #include "declaration.h"
-void display() {
+void display()
+{
 	char *tab;
 	tab = (char *)malloc(sizeof(char) * MAX_PATH);
 	cout << "enter table name to display\n";
 	cin >> tab;
 	int ret = search_table(tab);
-	if (ret == 0) {
+	if (ret == 0)
+	{
 		printf("%s doesn't exist\n\n", tab);
 		return;
-	} else if (ret == 1) {
+	}
+	else if (ret == 1)
+	{
 		//table exists
 
 		table *temp;
@@ -23,22 +27,29 @@ void display() {
 		temp = (table *)malloc(sizeof(table));
 		printf("\n-----------------------------------------------\n");
 		FILE *fp = open_file(tab, const_cast<char *>("r"));
-		if (fp) {
+		if (fp)
+		{
 			fread(temp, 1, sizeof(table), fp);
 			count = temp->count;
 			void *data2[MAX_ATTR];
-			for (int i = 0; i < count; i++) {
+			for (int i = 0; i < count; i++)
+			{
 				cout << temp->col[i].col_name << setw(20);
-				if (temp->col[i].type == INT) {
+				if (temp->col[i].type == INT)
+				{
 					data2[i] = (int *)malloc(sizeof(int));
-					if (data2[i] == NULL) {
+					if (data2[i] == NULL)
+					{
 						cout << "NULL";
 						return;
 					}
 					tot += sizeof(int);
-				} else if (temp->col[i].type == VARCHAR) {
+				}
+				else if (temp->col[i].type == VARCHAR)
+				{
 					data2[i] = malloc(sizeof(char) * (MAX_NAME + 1));
-					if (data2[i] == NULL) {
+					if (data2[i] == NULL)
+					{
 						cout << "NULL";
 						return;
 					}
@@ -52,7 +63,8 @@ void display() {
 			int c;
 			char d[MAX_NAME];
 			//cout<<"C........"<<c<<endl;
-			for (int i = 0; i < temp->rec_count; i++) {
+			for (int i = 0; i < temp->rec_count; i++)
+			{
 				FILE *fpr;
 				char *str;
 				str = (char *)malloc(sizeof(char) * MAX_PATH);
@@ -62,11 +74,15 @@ void display() {
 				//cout<<*(int *)data1[0]<<" ";
 				//fread(data2,temp->count,tot,fpr);
 				//fread(data2,1,tot,fpr);
-				for (int j = 0; j < temp->count; j++) {
-					if (temp->col[j].type == INT) {
+				for (int j = 0; j < temp->count; j++)
+				{
+					if (temp->col[j].type == INT)
+					{
 						fread(&c, 1, sizeof(int), fpr);
 						cout << c << setw(20);
-					} else if (temp->col[j].type == VARCHAR) {
+					}
+					else if (temp->col[j].type == VARCHAR)
+					{
 						fread(d, 1, sizeof(char) * MAX_NAME, fpr);
 						cout << d << setw(20);
 					}
@@ -82,10 +98,15 @@ void display() {
 	}
 }
 std::string _db_path;
-void show_tables() {
-	for (auto &name : std::filesystem::directory_iterator(_db_path)) {
+void show_tables()
+{
+	for (auto &name : std::filesystem::directory_iterator(_db_path))
+	{
 		//如果不想要路径加上.filename()即可.path
-		std::cout << name.path().filename() << std::endl;
+		if (name.is_directory())
+		{
+			std::cout << name.path().filename() << std::endl;
+		}
 	}
 	// char *name;
 	// printf("\n\nLIST OF TABLES\n\n");
