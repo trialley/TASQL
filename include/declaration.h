@@ -1,6 +1,6 @@
 #ifndef DEFINITIONS
 #define DEFINITIONS 1
-
+#include <CJsonObject.h>
 #include <assert.h>
 #include <limits.h>
 #include <math.h>
@@ -27,7 +27,7 @@
 #define VARCHAR 2
 
 #define BPTREE_MAX_FILE_PATH_SIZE 1000
-#define BPTREE_MAX_KEYS_PER_NODE 50
+#define BPTREE_MAX_KEYS_PER_NODE 5
 #define BPTREE_INSERT_SUCCESS 1
 #define BPTREE_INSERT_ERROR_EXIST 2
 #define BPTREE_SEARCH_NOT_FOUND -1
@@ -64,6 +64,8 @@ struct table {
 	int rec_count;
 };
 
+neb::CJsonObject showTables();
+neb::CJsonObject getBTree();
 // TODO:  在此处引用程序需要的其他头文件
 #ifdef _WIN32
 #define filenamecut(x) (strrchr(x, '\\') ? strrchr(x, '\\') + 1 : x)

@@ -39,6 +39,8 @@
 						<el-button type="danger" @click="deleteItem">由书号删除</el-button>
 					</el-form-item>
 				</el-form>
+				<el-button type="danger" @click="showTables">显示表格</el-button>
+
 			</el-col>
 			<el-col :span="19">
 				<div style="height:100vh;" id="display"></div>
@@ -63,6 +65,72 @@
 <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 <script src="https://cdn.staticfile.org/axios/0.18.0/axios.min.js"></script>
 <script>
+	var optionTemplate = {
+		"series": [{
+
+			"type": "tree",
+			"data": [
+				{
+					"name": "root",
+					"children": [{
+						"name": "黑龙江",
+						"children": [{
+							"name": "哈尔滨",
+							"value": 1200
+						}, {
+							"name": "大庆",
+							"value": 1500
+						}]
+					}, {
+						"name": "广东",
+						"children": [{
+							"name": "广州"
+						}, {
+							"name": "深圳",
+							"value": 3600
+						}, {
+							"name": "珠海",
+							"value": 2700
+						}]
+					}, {
+						"name": "台湾",
+						"children": [{
+							"name": "台北",
+							"value": 800
+						}, {
+							"name": "高雄",
+							"value": 600
+						}]
+					}, {
+						"name": "新疆",
+						"children": [{
+							"name": "乌鲁木齐",
+							"value": 300
+						}]
+					}]
+				}
+			],
+			"top": "20%",
+			"left": "7%",
+			"bottom": "20%",
+			"right": "20%",
+			"symbolSize": [50, 50],
+
+			itemStyle: {
+				color: "white"
+			},
+
+			"expandAndCollapse": false,
+			"animationDuration": 550,
+			"animationDurationUpdate": 750,
+			"orient": "vertical",
+			"symbol": "roundRect"
+
+
+
+		}]
+	};
+
 	new Vue({
 		el: '#app',
 		data() {
@@ -90,6 +158,15 @@
 			deleteItem() {
 
 			},
+			showTables() {
+				axios.post(
+					'http://localhost:7998/showTables'
+				).then(function (res) {
+					console.log(res);
+				}).catch(function (error) { // 请求失败处理
+					console.log(error);
+				});
+			},
 			createItem() {
 				//发送 post 请求
 				var _form = JSON.stringify(this.form);
@@ -100,76 +177,23 @@
 					_form
 				).then(function (res) {
 					console.log(res);
+					_this.updateEchart();
 				}).catch(function (error) { // 请求失败处理
 					console.log(error);
 				});
 			},
 			updateEchart() {
-				options = {
-					"series": [{
+				axios.post(
+					'http://localhost:7998/getBTree'
+				).then(function (res) {
+					console.log(res);
+					var option = optionTemplate;
+					option.series[0].data[0] = res.data;
+					myChart.setOption(option);
+				}).catch(function (error) { // 请求失败处理
+					console.log(error);
+				});
 
-						"type": "tree",
-						"data": [{
-							"name": "root",
-							"children": [{
-								"name": "黑龙江",
-								"children": [{
-									"name": "哈尔滨",
-									"value": 1200
-								}, {
-									"name": "大庆",
-									"value": 1500
-								}]
-							}, {
-								"name": "广东",
-								"children": [{
-									"name": "广州"
-								}, {
-									"name": "深圳",
-									"value": 3600
-								}, {
-									"name": "珠海",
-									"value": 2700
-								}]
-							}, {
-								"name": "台湾",
-								"children": [{
-									"name": "台北",
-									"value": 800
-								}, {
-									"name": "高雄",
-									"value": 600
-								}]
-							}, {
-								"name": "新疆",
-								"children": [{
-									"name": "乌鲁木齐",
-									"value": 300
-								}]
-							}]
-						}],
-						"top": "20%",
-						"left": "7%",
-						"bottom": "20%",
-						"right": "20%",
-						"symbolSize": [50, 50],
-
-						itemStyle: {
-							color: "white"
-						},
-
-						"expandAndCollapse": false,
-						"animationDuration": 550,
-						"animationDurationUpdate": 750,
-						"orient": "vertical",
-						"symbol": "roundRect"
-
-
-
-					}]
-				};
-
-				myChart.setOption(options);
 			}
 		}
 	})
@@ -178,78 +202,7 @@
 
 
 	var myChart = echarts.init(document.getElementById("display"));
-	var options = {
-		"series": [{
-
-			"type": "tree",
-			"data": [{
-				"name": "中国",
-				"children": [{
-					"name": "黑龙江",
-					"children": [{
-						"name": "哈尔滨",
-						"value": 1200
-					}, {
-						"name": "大庆",
-						"value": 1500
-					}]
-				}, {
-					"name": "广东",
-					"children": [{
-						"name": "广州",
-						"children": [{
-							"name": "越秀区",
-							"value": 450
-						}, {
-							"name": "白云区",
-							"value": 640
-						}]
-					}, {
-						"name": "深圳",
-						"value": 3600
-					}, {
-						"name": "珠海",
-						"value": 2700
-					}]
-				}, {
-					"name": "台湾",
-					"children": [{
-						"name": "台北",
-						"value": 800
-					}, {
-						"name": "高雄",
-						"value": 600
-					}]
-				}, {
-					"name": "新疆",
-					"children": [{
-						"name": "乌鲁木齐",
-						"value": 300
-					}]
-				}]
-			}],
-			"top": "20%",
-			"left": "7%",
-			"bottom": "20%",
-			"right": "20%",
-			"symbolSize": [50, 50],
-
-			itemStyle: {
-				color: "white"
-			},
-
-			"expandAndCollapse": false,
-			"animationDuration": 550,
-			"animationDurationUpdate": 750,
-			"orient": "vertical",
-			"symbol": "roundRect"
-
-
-
-		}]
-	};
-
-	myChart.setOption(options);
+	myChart.setOption(optionTemplate);
 
 </script>
 

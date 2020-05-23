@@ -1,5 +1,6 @@
 ﻿
 #include <APIServer.h>
+#include <declaration.h>
 
 #include <utility>
 
@@ -43,8 +44,8 @@ void APIServer::OnHttpWebsocketEvent(mg_connection* connection, int event_type, 
 }
 
 // ---- simple http ---- //
-static bool route_check(http_message* http_msg, char* route_prefix) {
-	if (mg_vcmp(&http_msg->uri, route_prefix) == 0)
+static bool route_check(http_message* http_msg, std::string&& route_prefix) {
+	if (mg_vcmp(&http_msg->uri, route_prefix.c_str()) == 0)
 		return true;
 	else
 		return false;
@@ -94,48 +95,52 @@ void APIServer::HandleHttpEvent(mg_connection* connection, http_message* http_re
 		ReqHandler handle_func = it->second;
 		handle_func(url, body, connection, &APIServer::SendHttpRsp);
 	}
-
-	// 其他请求
-	if (route_check(http_req, "/"))	 // index page
-	{
-		mg_serve_http(connection, http_req, s_server_option);
+	//开始解析输入
+	neb::CJsonObject data(body);
+	std::string bookID;
+	std::string bookAuthor;
+	std::string bookName;
+	std::string bookLeft;
+	if (!data.Get("bookID", bookID)) {
+		std::cout << "no type\n";
+	} else {
+		std::cout << bookID << std::endl;
 	}
-
-	else if (route_check(http_req, "/createItem")) {  //创建文件
-		neb::CJsonObject data(body);
-
-		std::string type;
-		if (!data.Get("bookID", type)) {
-			std::cout << "no type\n";
-		} else {
-			std::cout << type << std::endl;
-		}
-	} else if (route_check(http_req, "/api/sum")) {
-		// 简单post请求，加法运算测试
-		char n1[100], n2[100];
-		double result;
-
-		/* Get form variables */
-		mg_get_http_var(&http_req->body, "n1", n1, sizeof(n1));
-		mg_get_http_var(&http_req->body, "n2", n2, sizeof(n2));
-
-		/* Compute the result and send it back as a JSON object */
-		result = strtod(n1, NULL) + strtod(n2, NULL);
-
-		char buf[100];
-		sprintf(buf, "{\"result\":%f}\n", result);
-
-		SendHttpRsp(connection, std::string(buf));
-
+	if (!data.Get("bookName", bookName)) {
+		std::cout << "no type\n";
+	} else {
+		std::cout << bookName << std::endl;
 	}
-
-	else {
+	if (!data.Get("bookAuthor", bookAuthor)) {
+		std::cout << "no type\n";
+	} else {
+		std::cout << bookAuthor << std::endl;
+	}
+	if (!data.Get("bookLeft", bookLeft)) {
+		std::cout << "no type\n";
+	} else {
+		std::cout << bookLeft << std::endl;
+	}
+	std::string result;
+	if (route_check(http_req, std::string("/getBTree"))) {
+		result = getBTree().ToString();
+	} else if (route_check(http_req, std::string("/showTables"))) {
+		result = showTables().ToString();
+	} else if (route_check(http_req, std::string("/createItem"))) {	 //创建文件
+	} else if (route_check(http_req, std::string("/updateItem"))) {
+		// SendHttpRsp(connection, result);
+	} else if (route_check(http_req, std::string("/deleteItem"))) {
+		// SendHttpRsp(connection, result);
+	} else if (route_check(http_req, std::string("/searchItem"))) {
+		// SendHttpRsp(connection, result);
+	} else {
 		mg_printf(
 			connection,
 			"%s",
 			"HTTP/1.1 501 Not Implemented\r\n"	// 也可以用HTTP/2.0
 			"Content-Length: 0\r\n\r\n");
 	}
+	SendHttpRsp(connection, result);
 }
 
 // ---- websocket ---- //

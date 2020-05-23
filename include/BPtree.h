@@ -140,16 +140,16 @@ public:
 		return os;
 	}
 
-	//Overloading read operator to read from a fil
+	//从文件输入这个节点
 	friend std::ifstream &operator>>(std::ifstream &is, Btreenode &en) {
 		int ts;
 		is >> en.leaf;
-		is >> ts;
+		is >> ts;  //n个关键词
 		en.keys.resize(ts);
 		for (int i = 0; i < ts; i++) {
 			is >> en.keys[i];
 		}
-		is >> ts;
+		is >> ts;  //n个子节点
 		en.pointers.resize(ts);
 		for (int i = 0; i < ts; i++) {
 			is >> en.pointers[i];
