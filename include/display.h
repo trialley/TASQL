@@ -100,113 +100,67 @@ neb::CJsonObject showTables() {
 	}
 	return data;
 }
+neb::CJsonObject createDataNode(int i) {
+}
+neb::CJsonObject createNode(int i) {
+	neb::CJsonObject new_note;
+	// new_note["data"]["name"] += (std::to_string(i) + '\n');
+	std::ifstream temp_in("./table/ss/tree/tree" + std::to_string(i) + ".dat");
+	int isroot;
+	int indexnum;
+	int subnum;
+	temp_in >> isroot;
+	std::string name = "";
+	if (isroot == 0) {	//
+		name = "root\n";
+	}
+	name += (to_string(i) + "号节点\nID号:");
+	temp_in >> indexnum;
+	int ids[indexnum];
+	for (int i = 0; i < indexnum; ++i) {
+		temp_in >> ids[i];
+		name += (" " + std::to_string(ids[i]));
+	}
+	name += "\n位置号:";
+	temp_in >> subnum;
+	int subs[subnum];
+	new_note.AddEmptySubArray("children");
+	for (int i = 0; i < subnum; ++i) {
+		temp_in >> subs[i];
+		name += (" " + std::to_string(subs[i]));
+	}
+	int next;
+	temp_in >> next;
+	name += ("->" + std::to_string(next));
+	new_note.Add("name", name);
+	new_note.AddEmptySubArray("children");
 
+	if (isroot == 0) {	//不是底部节点，还有子节点
+		for (int i = 0; i < subnum; ++i) {
+			new_note["children"].Add(createNode(subs[i]));
+		}
+	} else {  //是底部节点，需要添加数据子节点
+		for (int i = 0; i < subnum; ++i) {
+			new_note["children"].Add(createDataNode(subs[i]));
+		}
+	}
+
+	return new_note;
+}
 neb::CJsonObject getBTree() {
 	neb::CJsonObject data(R"(
 		{
 			"type":"BTree",
 			"data":{
-
+				"name":"root",
+				"children":[]
 			}
 		}
 	)");
-	auto createBTree = [&]() -> void {
-		//search for particular table or any specific entry inside table
-		cout << "1.search table\n2.search particular entry in table\n\n";
-		char *tab = (char *)malloc(sizeof(char) * MAX_NAME);
+	//make root
+	std::ifstream temp_in("./table/ss/tree/meta_tree.dat");
+	int nodesnum, root_num;
+	temp_in >> nodesnum >> root_num;
 
-		cout << "enter table name: ";
-		tab = "ss";
-		int check = search_table(tab);
-		if (check == 1) {
-			printf("%s exists!!!\n\nEnter key to search\n\n", tab);
-			//open %s meta data file and display column details;
-			table inp1;
-			FILE *fp = open_file(tab, const_cast<char *>("r"));
-			int i = 0;
-			while (fread(&inp1, sizeof(table), 1, fp)) {
-				for (i = 0; i < inp1.count; i++) {
-					cout << inp1.col[i].col_name << "(" << inp1.col[i].type << "),size:" << inp1.col[i].size;
-					cout << "\t";
-				}
-			}
-			int pri_int;
-			int c;
-			char d[MAX_NAME];
-			char pri_char[MAX_NAME];
-			BPtree mytree(tab);
-			int ret = 0;
-			if (inp1.col[0].type == INT) {
-				cout << "\nenter key[col 0] to search\n";
-				cin >> pri_int;
-				ret = mytree.get_record(pri_int);
-				if (ret == BPTREE_SEARCH_NOT_FOUND) {
-					printf("\nSearching (%d) -> NOT FOUND !!", pri_int);
-				} else {
-					//printf("\nSearch (%d) exists -> record num = %d", pri_int, ret);
-					printf("\n %d exists \n\n", pri_int);
-					//print the details of the particular row;
-					FILE *fpz;
-					char *str1;
-					printf("\n------------------------------------\n");
-					str1 = (char *)malloc(sizeof(char) * MAX_PATH);
-					sprintf(str1, "table/%s/file%d.dat", tab, ret);
-					fpz = fopen(str1, "r");
-
-					for (int j = 0; j < inp1.count; j++) {
-						if (inp1.col[j].type == INT) {
-							fread(&c, 1, sizeof(int), fpz);
-							cout << c << "\t";
-						} else if (inp1.col[j].type == VARCHAR) {
-							fread(d, 1, sizeof(char) * MAX_NAME, fpz);
-							cout << d << "\t";
-						}
-					}
-					printf("\n------------------------------------\n");
-					fclose(fpz);
-					free(str1);
-				}
-			} else if (inp1.col[0].type == VARCHAR) {
-				cout << "\nenter  key[col 0] to search\n";
-				cin >> pri_char;
-				void *arr[MAX_NAME];
-				arr[0] = (char *)malloc(sizeof(char) * MAX_NAME);
-				arr[0] = pri_char;
-				ret = mytree.get_record(*(int *)arr[0]);
-				if (ret == BPTREE_SEARCH_NOT_FOUND) {
-					printf("\nSearching (%s) -> NOT FOUND !!", pri_char);
-				} else {
-					// printf("\nSearching (%s) -> record num = %d", pri_char, ret);
-					printf("\n%s exists\n\n", pri_char);
-
-					//print the details of the particular row;
-					FILE *fpz;
-					char *str1;
-					str1 = (char *)malloc(sizeof(char) * MAX_PATH);
-					sprintf(str1, "table/%s/file%d.dat", tab, ret);
-					fpz = fopen(str1, "r");
-					printf("\n------------------------------------\n");
-					for (int j = 0; j < inp1.count; j++) {
-						if (inp1.col[j].type == INT) {
-							fread(&c, 1, sizeof(int), fpz);
-							cout << c << "\t";
-						} else if (inp1.col[j].type == VARCHAR) {
-							fread(d, 1, sizeof(char) * MAX_NAME, fpz);
-							cout << d << "\t";
-						}
-					}
-					printf("\n-------------------------------------\n");
-					fclose(fpz);
-					free(str1);
-				}
-			}
-
-		} else {
-			printf("%s doesn't exists!!!\n\n", tab);
-		}
-		free(tab);
-	};
-
-	createBTree();
-	return data;
+	return createNode(root_num);
 }

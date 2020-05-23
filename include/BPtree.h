@@ -232,7 +232,7 @@ public:
 			write_node(0, root);
 		} else {
 			/* Read old Meta Data */
-			in_file >> files_till_now >> root_num;
+			in_file >> files_till_now >> root_num;	//节点数目，根节点编号
 			in_file.close();
 		}
 		free(str);
@@ -279,7 +279,9 @@ BPtree::search_leaf(int primary_key) {
 	return n;
 }
 
-/* A function that returns the record number of a tuple
+/*
+根据主键返回条目文件编号
+ A function that returns the record number of a tuple
     with indexed column = 'primary_key' */
 int BPtree::get_record(int primary_key) {
 	clock_t start = clock();
