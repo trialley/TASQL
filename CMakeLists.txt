@@ -18,7 +18,8 @@ include_directories(${INCLUDES_DIRECTORY})
 
 file(GLOB s_${SOURCES_DIRECTORY} "${SOURCES_DIRECTORY}/*.cpp")
 file(GLOB h_${SOURCES_DIRECTORY} "${SOURCES_DIRECTORY}/*.h")
-set(TASQL_sources ${s_${SOURCES_DIRECTORY}} ${h_${SOURCES_DIRECTORY}})
+set(TASQL_sources ${s_${SOURCES_DIRECTORY}}  ${h_${SOURCES_DIRECTORY}})
 
 
 add_executable(TASQL ${TASQL_sources})
+target_link_libraries(TASQL pthread)

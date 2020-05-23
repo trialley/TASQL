@@ -63,4 +63,15 @@ struct table {
 	void *blockbuf;
 	int rec_count;
 };
+
+// TODO:  在此处引用程序需要的其他头文件
+#ifdef _WIN32
+#define filenamecut(x) (strrchr(x, '\\') ? strrchr(x, '\\') + 1 : x)
+#elif __linux
+#define filenamecut(x) (strrchr(x, '/') ? strrchr(x, '/') + 1 : x)
+#else
+#PushError "No suitable filename cutter for your opearting system.\n"
+#endif
+#define LOG \
+	std::cout << __FILE__ << ":" << __LINE__ << ":1 " << __func__ << "() "
 #endif

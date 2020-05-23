@@ -1,3 +1,9 @@
+﻿#include <APIServer.h>
+#include <mongoose.h>
+
+#include <iostream>
+#include <memory>
+#include <thread>
 //
 #include "declaration.h"
 //
@@ -89,7 +95,7 @@ void input() {
 			drop();
 			break;
 		case 5:
-			display();
+			displayTable();
 			break;
 		case 6:
 			search();
@@ -119,9 +125,62 @@ void start_system() {
 	input();
 }
 
+static const char* s_http_port = "80";
+static struct mg_serve_http_opts s_http_server_opts;
+
+static void ev_handler(struct mg_connection* nc, int ev, void* p) {
+	if (ev == MG_EV_HTTP_REQUEST) {
+		mg_serve_http(nc, (struct http_message*)p, s_http_server_opts);
+	}
+}
+
+int staticserver() {
+	struct mg_mgr mgr;
+	struct mg_connection* nc;
+
+	mg_mgr_init(&mgr, NULL);
+	printf("Starting static server on port %s\n", s_http_port);
+	nc = mg_bind(&mgr, s_http_port, ev_handler);
+	if (nc == NULL) {
+		printf("Failed to create listener\n");
+		return 1;
+	}
+
+	// Set up HTTP server parameters
+	mg_set_protocol_http_websocket(nc);
+	s_http_server_opts.document_root = "./www";	 // Serve current directory
+	s_http_server_opts.enable_directory_listing = "yes";
+
+	for (;;) {
+		mg_mgr_poll(&mgr, 1000);
+	}
+	mg_mgr_free(&mgr);
+
+	return 0;
+}
+
+// 初始化APIServer静态类成员
+mg_serve_http_opts APIServer::s_server_option;
+std::string APIServer::s_web_dir = "./www";
+std::unordered_map<std::string, ReqHandler> APIServer::s_handler_map;
+std::unordered_set<mg_connection*> APIServer::s_websocket_session_set;
+
+int main(int argc, char* argv[]) {
+	std::thread t(staticserver);
+	std::string port = "7998";
+	auto server = std::shared_ptr<APIServer>(new APIServer);
+	server->Init(port);
+	server->Start();
+	t.join();
+
+	return 0;
+}
+
+/*
 int main() {
 	_db_path = "./table/";
 	// show_tables();
 	start_system();
 	return 0;
 }
+*/
