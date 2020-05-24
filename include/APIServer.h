@@ -119,23 +119,16 @@ void APIServer::RemoveHandler(const std::string& url) {
 }
 
 void APIServer::SendHttpRsp(mg_connection* connection, std::string rsp) {
-	// 必须先发送header, 也可以用HTTP/2.0
-	//mg_printf(connection, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n"); //Access-Control-Allow-Origin:
-
 	mg_printf(connection, "%s", "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin:*\r\nTransfer-Encoding: chunked\r\n\r\n");
-	// 以json形式返回
-	//mg_printf_http_chunk(connection, "{ \"result\": %s }", rsp.c_str());
 
-	//printf("result = %s \n", rsp.c_str());
 	mg_printf_http_chunk(connection, "%s", rsp.c_str());
-	// 发送空白字符快，结束当前响应
+
 	mg_send_http_chunk(connection, "", 0);
 }
 void APIServer::HandleHttpEvent(mg_connection* connection, http_message* http_req) {
 	std::string req_str = std::string(http_req->message.p, http_req->message.len);
 	printf("got request: %s\n", req_str.c_str());
 
-	// 先过滤是否已注册的函数回调
 	std::string url = std::string(http_req->uri.p, http_req->uri.len);
 	std::string body = std::string(http_req->body.p, http_req->body.len);
 	auto it = s_handler_map.find(url);
@@ -148,7 +141,8 @@ void APIServer::HandleHttpEvent(mg_connection* connection, http_message* http_re
 	std::string bookID;
 	std::string bookAuthor;
 	std::string bookName;
-	std::string bookLeft;
+	std::string bookLeftNum;
+	std::string bookTotalNum;
 	if (!data.Get("bookID", bookID)) {
 		std::cout << "no type\n";
 	} else {
@@ -164,16 +158,20 @@ void APIServer::HandleHttpEvent(mg_connection* connection, http_message* http_re
 	} else {
 		std::cout << bookAuthor << std::endl;
 	}
-	if (!data.Get("bookLeft", bookLeft)) {
+	if (!data.Get("bookLeftNum", bookLeftNum)) {
+		std::cout << "no type\n";
+	}
+	if (!data.Get("bookTotalNum", bookTotalNum)) {
 		std::cout << "no type\n";
 	} else {
-		std::cout << bookLeft << std::endl;
+		std::cout << bookLeftNum << std::endl;
 	}
 	neb::CJsonObject obj;
 	obj.Add("bookID", bookID);
 	obj.Add("bookName", bookName);
 	obj.Add("bookAuthor", bookAuthor);
-	obj.Add("bookLeft", bookLeft);
+	obj.Add("bookLeftNum", bookLeftNum);
+	obj.Add("bookTotalNum", bookTotalNum);
 	std::string result;
 
 	if (route_check(http_req, std::string("/getBTree"))) {

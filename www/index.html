@@ -24,7 +24,7 @@
 						<el-input v-model="form.bookAuthor"></el-input>
 					</el-form-item>
 					<el-form-item label="余量">
-						<el-input v-model="form.bookLeft"></el-input>
+						<el-input v-model="form.bookLeftNum"></el-input>
 					</el-form-item>
 					<el-form-item>
 						<el-button type="primary" @click="createItem">插入</el-button>
@@ -142,7 +142,7 @@
 				form: {
 					bookId: '',
 					bookName: '',
-					bookLeft: '',
+					bookLeftNum: '',
 					bookAuthor: '',
 				}
 			}

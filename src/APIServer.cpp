@@ -102,7 +102,7 @@
 // 	std::string bookID;
 // 	std::string bookAuthor;
 // 	std::string bookName;
-// 	std::string bookLeft;
+// 	std::string bookLeftNum;
 // 	if (!data.Get("bookID", bookID)) {
 // 		std::cout << "no type\n";
 // 	} else {
@@ -118,16 +118,16 @@
 // 	} else {
 // 		std::cout << bookAuthor << std::endl;
 // 	}
-// 	if (!data.Get("bookLeft", bookLeft)) {
+// 	if (!data.Get("bookLeftNum", bookLeftNum)) {
 // 		std::cout << "no type\n";
 // 	} else {
-// 		std::cout << bookLeft << std::endl;
+// 		std::cout << bookLeftNum << std::endl;
 // 	}
 // 	neb::CJsonObject obj;
 // 	obj.Add("bookID", bookID);
 // 	obj.Add("bookName", bookName);
 // 	obj.Add("bookAuthor", bookAuthor);
-// 	obj.Add("bookLeft", bookLeft);
+// 	obj.Add("bookLeftNum", bookLeftNum);
 // 	std::string result;
 
 // 	if (route_check(http_req, std::string("/getBTree"))) {

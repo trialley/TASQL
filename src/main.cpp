@@ -164,23 +164,24 @@ mg_serve_http_opts APIServer::s_server_option;
 std::string APIServer::s_web_dir = "./www";
 std::unordered_map<std::string, ReqHandler> APIServer::s_handler_map;
 std::unordered_set<mg_connection*> APIServer::s_websocket_session_set;
-
-int main(int argc, char* argv[]) {
-	_db_path = "./table/";
-	std::thread t(staticserver);
+int apiserver() {
 	std::string port = "7998";
 	auto server = std::shared_ptr<APIServer>(new APIServer);
 	server->Init(port);
 	server->Start();
-	t.join();
-
-	return 0;
 }
 
-/*
-int main() {
+int main(int argc, char* argv[]) {
+	_db_path = "./table/";
+	std::thread t(staticserver);
+	std::thread t1(apiserver);
+
+	_db_path = "./table/";
 	// showTables();
 	start_system();
+
+	t.join();
+	t1.join();
+
 	return 0;
 }
-*/
