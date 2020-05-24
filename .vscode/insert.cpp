@@ -86,7 +86,7 @@
 // 		char dir[100];
 // 		strcpy(dir, "./table/");
 // 		strcat(dir, tab);
-// 		strcat(dir, "/met");
+// 		strcat(dir, "/meta");
 // 		table inp1;
 // 		int count;
 // 		//read column details from file;
@@ -172,7 +172,7 @@
 // 		char dir[100];
 // 		strcpy(dir, "./table/");
 // 		strcat(dir, tab);
-// 		strcat(dir, "/met");
+// 		strcat(dir, "/meta");
 // 		table inp1;
 // 		int count;
 // 		//read column details from file;

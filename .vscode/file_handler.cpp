@@ -14,7 +14,7 @@
 
 // 	if (stat(name, &st) == -1)
 // 		mkdir(name, 0775);
-// 	strcat(name, "met");
+// 	strcat(name, "meta");
 // 	fp = fopen(name, perm);
 // 	if (!fp) {
 // 		printf("\nError in opening file\n");

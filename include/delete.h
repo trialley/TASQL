@@ -38,7 +38,7 @@ void deletei() {
 		char dir[100];
 		strcpy(dir, "./table/");
 		strcat(dir, tab);
-		strcat(dir, "/met");
+		strcat(dir, "/meta");
 		table inp1;
 		int count;
 		//read column details from file;
@@ -124,7 +124,7 @@ void deleteId(int id) {
 		char dir[100];
 		strcpy(dir, "./table/");
 		strcat(dir, tab);
-		strcat(dir, "/met");
+		strcat(dir, "/meta");
 		delete_command(tab, id);
 	}
 	free(tab);
