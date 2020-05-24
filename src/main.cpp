@@ -25,38 +25,17 @@ using namespace std;
 
 void help() {
 	std::cout <<
-		R"(TASQL
-myDB is a simple database design engine in which you can implement basic queries.
+		R"(                        WELCOME
+select the query to implement
 
-QUERIES SUPPORTED ARE::
-1.create a new table
-2.insert data into existing table
-3.drop table
-4.search in the table
-
-1.For creating table
-a>enter the table name
-b>enter no. of columns
-c>enter col name,datatype(1.INT 2.VARCHAR) and maximum size for it.
-
-2.For inserting data into table
-a>enter table name
-b>it will display how many details to be filled
-c>enter all the details
-d>your data is inserted into the table
-
-3.For deleting table just enter the table name
-
-4.For search into table
-a>you can search for a particular table if it exists or not
-b>b>You can search for a particular entry if it exists in the table or not
-c>For particular entry searching , search is based on primary key, so enter col[0] value of table to search
-
----------------------------------------------------------------------------------------------------
-                        designed by::
-
-                        MANDEEP SINGH
-                        PAWAN SHEORAN
+1.show all tables in database
+2.create table
+3.insert into table
+4.drop table
+5.display table contents
+6.search table or search inside table
+7.help
+8.quit
 )";
 }
 
@@ -65,7 +44,7 @@ int take_input_option() {
 	fflush(stdout);
 	fflush(stdin);
 	printf("\n select the query to implement\n");
-	printf("\n1.show all tables in database\n2.create table\n3.insert into table\n4.drop table\n5.display table contents\n6.search table or search inside table\n7.help\n8.quit\n\n");
+	help();
 	cin >> option;
 	if (option.length() > 1) {
 		printf("\nwrong input\nexiting...\n\n");
@@ -121,8 +100,7 @@ void input() {
 //starting the system
 void start_system() {
 	system("clear");
-	printf("\n\t\t\tWELCOME\n\n");
-	printf("\t\tWelcome to myDB monitor \n\n");
+
 	//cout<<"\t\tType h for help and q for quit\n\n";
 	input();
 }
