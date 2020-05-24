@@ -251,9 +251,11 @@ void insertObj(neb::CJsonObject &obj) {
 	free(tab);
 }
 
-void borrowObj(neb::CJsonObject &obj, int dnum) {
+void borrowObj(neb::CJsonObject &obj, int dnum, bool isbuy) {
 	int id;
-	obj.Get("bookId", id);
+	std::string tempint;
+	obj.Get("bookID", tempint);
+	id = atoi(tempint.c_str());
 
 	char *tab;
 	tab = (char *)malloc(sizeof(char) * MAX_PATH + 1);
@@ -271,13 +273,13 @@ void borrowObj(neb::CJsonObject &obj, int dnum) {
 		strcat(dir, "/met");
 		// delete_command(tab, id);
 
-		table *temp;
+		table *inp1;
 		int ret;
 		BPtree obj(tab);
 		//open meta data
 		FILE *fp = open_file(tab, const_cast<char *>("r"));
-		temp = (table *)malloc(sizeof(table));
-		fread(temp, sizeof(table), 1, fp);
+		inp1 = (table *)malloc(sizeof(table));
+		fread(inp1, sizeof(table), 1, fp);
 
 		//insert into table and write to btree file nodes
 		ret = obj.get_record(id);
@@ -292,27 +294,65 @@ void borrowObj(neb::CJsonObject &obj, int dnum) {
 		fpz = fopen(str1, "r");
 		int c;
 		char d[MAX_NAME];
-		table inp1;
-		FILE *fp = open_file(tab, const_cast<char *>("r"));
-		for (int j = 0; j < inp1.count; j++) {
-			if (inp1.col[j].type == INT) {
-				fread(&c, 1, sizeof(int), fpz);
-				cout << c << "\t";
-			} else if (inp1.col[j].type == VARCHAR) {
-				fread(d, 1, sizeof(char) * MAX_NAME, fpz);
-				cout << d << "\t";
+
+		//创建新文件
+		//插入数据项目
+		char *str;
+		str = (char *)malloc(sizeof(char) * MAX_PATH);
+		sprintf(str, "table/ss/file%d.dat1", ret);
+
+		int x;
+		char y[MAX_NAME];
+		int temp_bookleftnum = -1;
+		int temp_booktotalnum = -1;
+		for (int j = 0; j < inp1->count; j++) {
+			if (inp1->col[j].type == INT) {
+				fread(&x, 1, sizeof(int), fpz);
+				if (std::string(inp1->col[j].col_name) == "bookLeftNum") {
+					temp_bookleftnum = x;
+				} else if (std::string(inp1->col[j].col_name) == "bookTotalNum") {
+					temp_booktotalnum = x;
+				}
+			} else if (inp1->col[j].type == VARCHAR) {
+				fread(y, 1, sizeof(char) * MAX_NAME, fpz);
 			}
 		}
+		fclose(fpz);
+		fpz = fopen(str1, "r");		   //z是老文件
+		FILE *fpr = fopen(str, "w+");  //r是新文件
 
+		//写新数据
+		for (int j = 0; j < inp1->count; j++) {
+			if (inp1->col[j].type == INT) {
+				fread(&x, 1, sizeof(int), fpz);
+				if (!isbuy && std::string(inp1->col[j].col_name) == "bookLeftNum") {
+					x = std::min(
+						temp_booktotalnum,
+						std::max(temp_bookleftnum + dnum, 0));
+				} else if (isbuy && std::string(inp1->col[j].col_name) == "bookTotalNum") {
+					x = std::max(temp_booktotalnum + dnum, 0);
+				}
+
+				fwrite(&x, sizeof(int), 1, fpr);
+			} else if (inp1->col[j].type == VARCHAR) {
+				fread(y, 1, sizeof(char) * MAX_NAME, fpz);
+				fwrite(y, sizeof(char) * MAX_NAME, 1, fpr);
+			}
+		}
+		//结束
 		if (remove(("./table/ss/file" + std::to_string(ret) + ".dat").c_str()) == 0) {
 			cout << "删除成功" << endl;
+			//str重命名为str1
+			rename(str, str1);
 		} else {
 			cout << "删除失败" << endl;
 		}
+		free(str);
 		fclose(fpz);
+		fclose(fpr);
 		free(str1);
 
-		free(temp);
+		free(inp1);
 	}
 	free(tab);
 }

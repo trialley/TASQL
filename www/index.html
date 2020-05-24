@@ -18,7 +18,7 @@
 				<!-- 插入框 -->
 				<el-form ref="form" :model="form" label-width="40px">
 					<el-form-item label="书号">
-						<el-input v-model="form.bookId"></el-input>
+						<el-input v-model="form.bookID"></el-input>
 					</el-form-item>
 					<el-form-item label="书名">
 						<el-input v-model="form.bookName"></el-input>
@@ -53,7 +53,7 @@
 				</el-header>
 				<el-main>
 					<el-table :data="tableData" border max-height="340" style="width: 100%">
-						<el-table-column prop="bookId" label="bookId" width="180">
+						<el-table-column prop="bookID" label="bookID" width="180">
 						</el-table-column>
 						<el-table-column prop="bookName" label="bookName" width="180">
 						</el-table-column>
@@ -166,14 +166,14 @@
 		data() {
 			return {
 				form: {
-					bookId: '',
+					bookID: '',
 					bookName: '',
 					bookLeftNum: '',
 					bookAuthor: '',
 					bookTotalNum: ''
 				},
 				tableData: [{
-					bookId: '4',
+					bookID: '4',
 					bookName: '4',
 					bookLeftNum: '4',
 					bookAuthor: '4',

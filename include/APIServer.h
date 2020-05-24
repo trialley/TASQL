@@ -192,10 +192,10 @@ void APIServer::HandleHttpEvent(mg_connection* connection, http_message* http_re
 	} else if (route_check(http_req, std::string("/deleteItem"))) {	 //注销
 		deleteId(atoi(bookID.c_str()));
 	} else if (route_check(http_req, std::string("/borrowItem"))) {
-		borrowObj(obj, -1);
+		borrowObj(obj, -1, false);
 
 	} else if (route_check(http_req, std::string("/returnItem"))) {
-		borrowObj(obj, 1);
+		borrowObj(obj, 1, false);
 
 	} else {
 		mg_printf(
