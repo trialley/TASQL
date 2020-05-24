@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include <CJsonObject.h>
 #include <declaration.h>
 

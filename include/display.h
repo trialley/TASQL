@@ -1,5 +1,7 @@
 
 
+#pragma once
+
 #include <CJsonObject.h>
 
 #include <filesystem>
@@ -91,6 +93,7 @@ neb::CJsonObject showTables() {
 			"tables":[]
 		}
 	)");
+
 	for (auto &name : std::filesystem::directory_iterator(_db_path)) {
 		//如果不想要路径加上.filename()即可.path
 		if (name.is_directory()) {
@@ -101,6 +104,32 @@ neb::CJsonObject showTables() {
 	return data;
 }
 neb::CJsonObject createDataNode(int i) {
+	neb::CJsonObject data;
+	int c;
+	FILE *fpr;
+	table *temp;
+	int count;
+	int tot = 0;
+	char d[MAX_NAME];
+	temp = (table *)malloc(sizeof(table));
+	// printf("\n-----------------------------------------------\n");
+	FILE *fp = open_file("ss", const_cast<char *>("r"));
+	fread(temp, 1, sizeof(table), fp);
+	fpr = fopen(("table/ss/file" + std::to_string(i) + ".dat").c_str(), "r");
+	std::string res;
+	for (int j = 0; j < temp->count; j++) {
+		if (temp->col[j].type == INT) {
+			fread(&c, 1, sizeof(int), fpr);
+			res += (std::to_string(c) += " ");
+		} else if (temp->col[j].type == VARCHAR) {
+			fread(d, 1, sizeof(char) * MAX_NAME, fpr);
+			res += (std::string(d));
+		}
+	}
+	data.Add("name", res);
+	// cout << "\n\n";
+	fclose(fpr);
+	return data;  //竟然忘记返回值
 }
 neb::CJsonObject createNode(int i) {
 	neb::CJsonObject new_note;
@@ -114,14 +143,14 @@ neb::CJsonObject createNode(int i) {
 	if (isroot == 0) {	//
 		name = "root\n";
 	}
-	name += (to_string(i) + "号节点\nID号:");
+	name += ("ID:");
 	temp_in >> indexnum;
 	int ids[indexnum];
 	for (int i = 0; i < indexnum; ++i) {
 		temp_in >> ids[i];
 		name += (" " + std::to_string(ids[i]));
 	}
-	name += "\n位置号:";
+	name += "\nPOS:";
 	temp_in >> subnum;
 	int subs[subnum];
 	new_note.AddEmptySubArray("children");
@@ -131,7 +160,7 @@ neb::CJsonObject createNode(int i) {
 	}
 	int next;
 	temp_in >> next;
-	name += ("->" + std::to_string(next));
+	name = ("node" + std::to_string(i) + "->" + std::to_string(next)) + "\n" + name;
 	new_note.Add("name", name);
 	new_note.AddEmptySubArray("children");
 

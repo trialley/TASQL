@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef DEFINITIONS
 #define DEFINITIONS 1
 #include <CJsonObject.h>

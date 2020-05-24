@@ -1,6 +1,7 @@
+#pragma once
+#include "BPtree.h"
 #include "declaration.h"
-//#include "file_handler.h"
-//#include "BPtree.h"
+#include "file_handler.h"
 
 int search_table(char tab_name[]) {
 	//check if new table already exists in table list or not
@@ -148,6 +149,99 @@ void insert() {
 					} else
 						flag = 0;
 				}
+				strcpy((char *)(data[i]), var);
+				//cout<<(char *)data[1]<<endl;
+				size++;
+			}
+		}
+		insert_command(tab, data, total);
+	}
+	free(tab);
+}
+
+void insertObj(neb::CJsonObject &obj) {
+	char *tab;
+	tab = (char *)malloc(sizeof(char) * MAX_PATH + 1);
+	cout << "enter table name: ";
+	strcpy(tab, "ss");
+	int check = search_table(tab);
+	if (check == 0) {
+		printf("Table %s not exists\n", tab);
+		return;
+	} else {
+		cout << "\nTable exists enter data\n\n";
+		char dir[100];
+		strcpy(dir, "./table/");
+		strcat(dir, tab);
+		strcat(dir, "/met");
+		table inp1;
+		int count;
+		//read column details from file;
+		FILE *fp = open_file(tab, const_cast<char *>("r"));
+		int i = 0;
+		while (fread(&inp1, sizeof(table), 1, fp)) {
+			printf("------------------------------------\n");
+			cout << "\ninsert the following details ::\n";
+			printf("\n------------------------------------\n");
+			count = inp1.count;
+			for (i = 0; i < inp1.count; i++) {
+				cout << inp1.col[i].col_name << "(" << inp1.col[i].type << "),size:" << inp1.col[i].size;
+				cout << "\t";
+			}
+		}
+		printf("\n------------------------------------\n");
+		//enter data;
+		char var[MAX_NAME + 1];
+		void *data[MAX_ATTR];
+		//void *data1[MAX_ATTR];
+
+		//input data for the table of desired datatype 1.int 2.varchar;
+		int size = 0;
+		int total = 0;
+		std::string strTraversing;
+		for (int i = 0; i < count; i++) {
+			if (inp1.col[i].type == INT) {
+				data[i] = (int *)malloc(sizeof(int));
+				total += sizeof(int);
+				string inp_int;
+
+				obj.GetKey(strTraversing);
+				obj.Get(strTraversing, inp_int);
+				// strcpy(var, temp_str.c_str());
+
+				// cin >> inp_int;
+				if (inp_int.length() > (unsigned)inp1.col[i].size) {
+					printf("\nwrong input, size <= %d\nexiting...\n", inp1.col[i].size);
+					return;
+				} else {
+					//verify if entered input is integer and not a string;
+					int num = 0;
+					int factor_10 = 1;
+					for (int j = inp_int.length() - 1; j >= 0; j--) {
+						if (inp_int[j] < 48 || inp_int[j] > 57) {
+							printf("\nwrong input, input should be integer\nexiting...\n");
+							return;
+						} else {
+							num += (inp_int[j] - 48) * factor_10;
+							factor_10 = factor_10 * 10;
+						}
+					}
+					*((int *)data[i]) = num;
+				}
+				size++;
+			} else if (inp1.col[i].type == VARCHAR) {
+				//cout<<"inside varchar\n";
+				data[i] = malloc(sizeof(char) * (MAX_NAME + 1));
+
+				obj.GetKey(strTraversing);
+				std::string temp_str;
+				obj.Get(strTraversing, temp_str);
+				strcpy(var, temp_str.c_str());
+
+				total += sizeof(char) * (MAX_NAME + 1);
+				if (strlen(var) > (unsigned int)inp1.col[i].size)
+					cout << "error\nEntered size of string is greater than specified \n";
+
 				strcpy((char *)(data[i]), var);
 				//cout<<(char *)data[1]<<endl;
 				size++;

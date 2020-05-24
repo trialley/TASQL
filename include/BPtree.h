@@ -1,3 +1,4 @@
+#pragma once
 #include "declaration.h"
 class Btreenode {
 private:
