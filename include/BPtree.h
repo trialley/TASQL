@@ -2,6 +2,7 @@
 #include "declaration.h"
 class Btreenode {
 private:
+public:
 	bool leaf;
 	std::vector<int> pointers;
 	std::vector<int> keys;
@@ -60,7 +61,7 @@ public:
 	/*Function that performs binary search and returns the
        correct child. For Internal Nodes */
 	int get_next_key(int search_key) {
-		return (std::lower_bound(keys.begin(), keys.end(),
+		return (std::lower_bound(keys.begin(), keys.end(),	//返回大于或等于val的第一个元素位置。如果所有元素都小于val，则返回last的位置
 								 search_key) -
 				keys.begin());
 	}
@@ -84,7 +85,18 @@ public:
 		else
 			return true;
 	}
-
+	bool toMerge() {
+		if (leaf) {
+			if (pointers.size() > BPTREE_MAX_KEYS_PER_NODE / 2)
+				return false;
+			else
+				return true;
+		}
+		if (pointers.size() > BPTREE_MAX_KEYS_PER_NODE / 2 - 1)
+			return false;
+		else
+			return true;
+	}
 	/*Function that inserts a new record in a node which
        is not yet full */
 	void insert_key(int key, int point) {
@@ -95,7 +107,20 @@ public:
 		else
 			pointers.insert(pointers.begin() + pos + 1, point);
 	}
-
+	void remove_v(vector<int> &v, int val) {
+		vector<int>::iterator ite;
+		for (ite = v.begin(); ite != v.end();) {
+			if (*ite == val)
+				ite = v.erase(ite);
+			else
+				++ite;
+		}
+	}
+	void delete_key(int key) {
+		auto pos = std::find(keys.begin(), keys.end(), key);
+		pointers.erase(pointers.begin() + (pos - keys.begin()));
+		keys.erase(pos);
+	}
 	/*Function that copies first 'n' records from a given
        node to the current node */
 	void copy_first(Btreenode &node, int n) {
@@ -252,6 +277,7 @@ public:
 	}
 
 	int insert_record(int primary_key, int record_num);
+	int delete_record(int primary_key);
 	Btreenode search_leaf(int primary_key);
 	int get_record(int primary_key);
 };
@@ -302,7 +328,6 @@ int BPtree::get_record(int primary_key) {
     B+ Tree */
 //key is first coloumn of database either can be int or varchar;
 int BPtree::insert_record(int primary_key, int record_num) {
-	//printf("pri %d\n record_num %d",primary_key,record_num);
 	Btreenode n(true);
 	int q, j, prop_n, prop_k, prop_new, curr_node = root_num;
 	bool finish = false;
@@ -310,28 +335,27 @@ int BPtree::insert_record(int primary_key, int record_num) {
 
 	read_node(curr_node, n);
 
-	//Traverse the tree till we get the leaf node;
+	//递归获得叶子节点
 	while (!n.isleaf()) {
-		S.push(curr_node);	//Storing address in case of split
-		q = n.num_pointers();
-		if (primary_key <= n.get_key(1)) {
-			curr_node = n.get_pointer(1);
-		} else if (primary_key > n.get_key(q - 1)) {
+		S.push(curr_node);							  //加入栈中以备分割
+		q = n.num_pointers();						  //获得指针数量
+		if (primary_key <= n.get_key(1)) {			  //小于等于倒数第一个则进入前一个节点
+			curr_node = n.get_pointer(1);			  //下沉
+		} else if (primary_key > n.get_key(q - 1)) {  //大于倒数第二个则进之后的节点
 			curr_node = n.get_pointer(q);
 		} else {
-			curr_node = n.get_pointer(n.get_next_key(primary_key) + 1);
+			curr_node = n.get_pointer(n.get_next_key(primary_key) + 1);	 //获取下沉位置
 		}
-		read_node(curr_node, n);
+		read_node(curr_node, n);  //更新当前节点
 	}
 
 	//Here n is Leaf Node
 	//if key exist exist then return;
-	if (n.search_key(primary_key))	//key exist
-	{
+	if (n.search_key(primary_key)) {  //id存在于当前节点
 		return BPTREE_INSERT_ERROR_EXIST;
 	}
 
-	if (!n.full()) {
+	if (!n.full()) {  //叶子节点数目小于最大-1 内节点小于最大，无需分裂，直接插入
 		//leaf node empty insert here and exit
 		n.insert_key(primary_key, record_num);
 		write_node(curr_node, n);
@@ -340,7 +364,7 @@ int BPtree::insert_record(int primary_key, int record_num) {
 	}
 
 	//if node n is full, then split;
-	Btreenode temp(true), new_node(true);
+	Btreenode temp(true), new_node(true);  //构建新节点，进行分裂
 
 	temp = n;
 	temp.insert_key(primary_key, record_num);
@@ -362,10 +386,9 @@ int BPtree::insert_record(int primary_key, int record_num) {
 	/* Keep repeating until we reach root
        or find an empty internal node */
 	while (!finish) {
-		if (S.size() == 0) {
-			/*Last element splitted was root
-               so create new root and assign meta_data */
-			Btreenode nn(false);
+		if (S.size() == 0) {  //如果栈为空
+			/*构建根节点并重置元数据*/
+			Btreenode nn(false);  //传参是不是叶节点
 			nn.push_key(prop_k);
 			nn.push_pointer(prop_n);
 			nn.push_pointer(prop_new);
@@ -399,6 +422,49 @@ int BPtree::insert_record(int primary_key, int record_num) {
 		}
 	}
 
+	update_meta_data();
+	return BPTREE_INSERT_SUCCESS;
+}
+
+int BPtree::delete_record(int primary_key) {
+	Btreenode n(true);
+	int q, j, prop_n, prop_k, prop_new, curr_node = root_num;
+	bool finish = false;
+	std::stack<int> S;
+
+	read_node(curr_node, n);
+
+	//递归获得叶子节点
+	while (!n.isleaf()) {
+		S.push(curr_node);							  //加入栈中以备分割
+		q = n.num_pointers();						  //获得指针数量
+		if (primary_key <= n.get_key(1)) {			  //小于等于倒数第一个则进入前一个节点
+			curr_node = n.get_pointer(1);			  //下沉
+		} else if (primary_key > n.get_key(q - 1)) {  //大于倒数第二个则进之后的节点
+			curr_node = n.get_pointer(q);
+		} else {
+			curr_node = n.get_pointer(n.get_next_key(primary_key) + 1);	 //获取下沉位置
+		}
+		read_node(curr_node, n);  //更新当前节点
+	}
+
+	//Here n is Leaf Node
+	//if key exist exist then return;
+	if (!n.search_key(primary_key)) {  //id存在于当前节点
+		std::cout << "节点中不存在目标id，无法删除" << std::endl;
+
+		return BPTREE_INSERT_ERROR_EXIST;
+	}
+	std::cout << "节点中存在目标id，开始删除" << std::endl;
+
+	//结点中关键字个数大于⌈M/2⌉，做删除操作不会破坏 B+树，
+	if (!n.toMerge()) {
+		//leaf node empty insert here and exit
+		n.delete_key(primary_key);
+		write_node(curr_node, n);
+		update_meta_data();	 //更新节点数和根节点编号
+		return BPTREE_INSERT_SUCCESS;
+	}
 	update_meta_data();
 	return BPTREE_INSERT_SUCCESS;
 }

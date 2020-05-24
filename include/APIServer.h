@@ -9,7 +9,8 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-
+neb::CJsonObject getTable();
+void deleteId(int id);
 // 定义http返回callback
 typedef void OnRspCallback(mg_connection* c, std::string);
 // 定义http请求handler
@@ -174,19 +175,28 @@ void APIServer::HandleHttpEvent(mg_connection* connection, http_message* http_re
 	obj.Add("bookTotalNum", bookTotalNum);
 	std::string result;
 
-	if (route_check(http_req, std::string("/getBTree"))) {
+	if (route_check(http_req, std::string("/getTable"))) {
+		result = getTable().ToString();
+	} else if (route_check(http_req, std::string("/getBTree"))) {
 		result = getBTree().ToString();
 	} else if (route_check(http_req, std::string("/showTables"))) {
 		result = showTables().ToString();
-	} else if (route_check(http_req, std::string("/createItem"))) {	 //创建
+	} else if (route_check(http_req, std::string("/createItem"))) {	 //采编入库
 		insertObj(obj);
+		result = R"(
+			{
+				"type":"info",
+				"result":"success"
+			}
+		)";
+	} else if (route_check(http_req, std::string("/deleteItem"))) {	 //注销
+		deleteId(atoi(bookID.c_str()));
+	} else if (route_check(http_req, std::string("/borrowItem"))) {
+		borrowObj(obj, -1);
 
-	} else if (route_check(http_req, std::string("/updateItem"))) {
-		// SendHttpRsp(connection, result);
-	} else if (route_check(http_req, std::string("/deleteItem"))) {
-		// SendHttpRsp(connection, result);
-	} else if (route_check(http_req, std::string("/searchItem"))) {
-		// SendHttpRsp(connection, result);
+	} else if (route_check(http_req, std::string("/returnItem"))) {
+		borrowObj(obj, 1);
+
 	} else {
 		mg_printf(
 			connection,

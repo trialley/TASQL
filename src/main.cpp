@@ -13,6 +13,8 @@
 //
 #include "insert.h"
 //
+#include "delete.h"
+//
 #include "display.h"
 //
 #include "search.h"

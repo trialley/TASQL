@@ -9,9 +9,12 @@
 
 <body>
 	<div id="app">
+		<el-container>
+			<el-aside width="200px">
 
-		<el-row :gutter="0">
-			<el-col :span="4">
+
+
+				<!-- <el-col :span="4"> -->
 				<!-- 插入框 -->
 				<el-form ref="form" :model="form" label-width="40px">
 					<el-form-item label="书号">
@@ -26,26 +29,49 @@
 					<el-form-item label="余量">
 						<el-input v-model="form.bookLeftNum"></el-input>
 					</el-form-item>
-					<el-form-item>
-						<el-button type="primary" @click="createItem">插入</el-button>
-					</el-form-item>
-					<el-form-item>
-						<el-button type="primary" @click="updateItem">由书号更新</el-button>
-					</el-form-item>
-					<el-form-item>
-						<el-button type="primary" @click="searchItem">由书号查找</el-button>
-					</el-form-item>
-					<el-form-item>
-						<el-button type="danger" @click="deleteItem">由书号删除</el-button>
+					<el-form-item label="总量">
+						<el-input v-model="form.bookTotalNum"></el-input>
 					</el-form-item>
 				</el-form>
-				<el-button type="danger" @click="showTables">显示表格</el-button>
+				<div width="200px">
+					<el-button type="primary" @click="borrowItem">借阅</el-button>
+				</div>
+				<div width="200px">
+					<el-button type="primary" @click="returnItem">归还</el-button>
+				</div>
+				<div width="200px">
+					<el-button type="primary" @click="createItem">采编入库</el-button>
+				</div>
+				<div width="200px">
+					<el-button type="danger" @click="deleteItem">清除库存</el-button>
+				</div>
+				<!-- </el-col> -->
+			</el-aside>
+			<el-container>
+				<el-header height="50%vh">
+					<div style="height:50vh;" id="display"></div>
+				</el-header>
+				<el-main>
+					<el-table :data="tableData" border max-height="340" style="width: 100%">
+						<el-table-column prop="bookId" label="bookId" width="180">
+						</el-table-column>
+						<el-table-column prop="bookName" label="bookName" width="180">
+						</el-table-column>
+						<el-table-column prop="bookLeftNum" label="bookAuthor">
+						</el-table-column>
+						<el-table-column prop="bookAuthor" label="bookLeftNum">
+						</el-table-column>
+						<el-table-column prop="bookTotalNum" label="bookTotalNum">
+						</el-table-column>
+					</el-table>
+				</el-main>
+			</el-container>
+		</el-container>
+		<!-- <el-row :gutter="0">
 
-			</el-col>
 			<el-col :span="20">
-				<div style="height:100vh;" id="display"></div>
 			</el-col>
-		</el-row>
+		</el-row> -->
 	</div>
 </body>
 <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
@@ -118,7 +144,7 @@
 			"left": "7%",
 			"bottom": "20%",
 			"right": "20%",
-			"symbolSize": [60, 40],
+			"symbolSize": [90, 40],
 
 			itemStyle: {
 				color: "white"
@@ -144,29 +170,62 @@
 					bookName: '',
 					bookLeftNum: '',
 					bookAuthor: '',
-				}
+					bookTotalNum: ''
+				},
+				tableData: [{
+					bookId: '4',
+					bookName: '4',
+					bookLeftNum: '4',
+					bookAuthor: '4',
+					bookTotalNum: '4'
+				}]
 			}
 		},
+		created: function () {
+			setTimeout(this.updateEchart, 1000);
+		},
 		methods: {
-			onSubmit() {
-				console.log('submit!');
-				var temp_data = 0;
-				this.updateEchart();
-			},
-			updateItem() {
-
-			},
-			searchItem() {
-
-			},
-			deleteItem() {
-
-			},
-			showTables() {
+			borrowItem() {
+				//发送 post 请求
+				var _form = JSON.stringify(this.form);
+				console.log(_form);
+				_this = this;
 				axios.post(
-					'http://localhost:7998/showTables'
+					'http://localhost:7998/borrowItem',
+					_form
 				).then(function (res) {
 					console.log(res);
+					_this.updateEchart();
+				}).catch(function (error) { // 请求失败处理
+					console.log(error);
+				});
+			},
+			returnItem() {
+				//发送 post 请求
+				var _form = JSON.stringify(this.form);
+				console.log(_form);
+				_this = this;
+				axios.post(
+					'http://localhost:7998/returnItem',
+					_form
+				).then(function (res) {
+					console.log(res);
+					_this.updateEchart();
+				}).catch(function (error) { // 请求失败处理
+					console.log(error);
+				});
+			},
+			deleteItem() {
+				//发送 post 请求
+				var _form = JSON.stringify(this.form);
+				console.log(_form);
+				_this = this;
+				axios.post(
+					'http://localhost:7998/deleteItem',
+					_form
+				).then(function (res) {
+					console.log(res);
+					_this.updateEchart();
 				}).catch(function (error) { // 请求失败处理
 					console.log(error);
 				});
@@ -186,6 +245,7 @@
 					console.log(error);
 				});
 			},
+
 			updateEchart() {
 				axios.post(
 					'http://localhost:7998/getBTree'
@@ -194,6 +254,18 @@
 					var option = optionTemplate;
 					option.series[0].data[0] = res.data;
 					myChart.setOption(option);
+				}).catch(function (error) { // 请求失败处理
+					console.log(error);
+				});
+				this.updateTable();
+			},
+			updateTable() {
+				var _this = this;
+				axios.post(
+					'http://localhost:7998/getTable'
+				).then(function (res) {
+					console.log(res);
+					_this.tableData = res.data.table;
 				}).catch(function (error) { // 请求失败处理
 					console.log(error);
 				});

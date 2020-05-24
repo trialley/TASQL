@@ -26,12 +26,12 @@ void insert_command(char tname[], void *data[], int total) {
 	table *temp;
 	int ret;
 	BPtree obj(tname);
-	//open meta data
+	//打开数据表元文件
 	FILE *fp = open_file(tname, const_cast<char *>("r"));
 	temp = (table *)malloc(sizeof(table));
 	fread(temp, sizeof(table), 1, fp);
 
-	//insert into table and write to btree file nodes
+	//插入B+树
 	ret = obj.insert_record(*((int *)data[0]), temp->rec_count);
 	if (ret == 2) {
 		cout << "key already exists\n";
@@ -41,7 +41,7 @@ void insert_command(char tname[], void *data[], int total) {
 
 	//if no error occurred during insertion of key
 
-	//update the meta data;
+	//更新元数据
 	fp = open_file(tname, const_cast<char *>("w+"));
 	int file_num = temp->rec_count;
 	temp->rec_count = temp->rec_count + 1;
@@ -49,11 +49,10 @@ void insert_command(char tname[], void *data[], int total) {
 	fwrite(temp, sizeof(table), 1, fp);
 	fclose(fp);
 
-	//update the particular entry of inserted data to file;
+	//插入数据项目
 	char *str;
 	str = (char *)malloc(sizeof(char) * MAX_PATH);
 	sprintf(str, "table/%s/file%d.dat", tname, file_num);
-	//cout<<str<<endl;
 	FILE *fpr = fopen(str, "w+");
 	int x;
 	char y[MAX_NAME];
@@ -248,6 +247,72 @@ void insertObj(neb::CJsonObject &obj) {
 			}
 		}
 		insert_command(tab, data, total);
+	}
+	free(tab);
+}
+
+void borrowObj(neb::CJsonObject &obj, int dnum) {
+	int id;
+	obj.Get("bookId", id);
+
+	char *tab;
+	tab = (char *)malloc(sizeof(char) * MAX_PATH + 1);
+	cout << "enter table name: " << std::endl;
+	strcpy(tab, "ss");
+	int check = search_table(tab);
+	if (check == 0) {
+		printf("Table %s not exists\n", tab);
+		return;
+	} else {
+		cout << "\nTable exists enter data\n\n";
+		char dir[100];
+		strcpy(dir, "./table/");
+		strcat(dir, tab);
+		strcat(dir, "/met");
+		// delete_command(tab, id);
+
+		table *temp;
+		int ret;
+		BPtree obj(tab);
+		//open meta data
+		FILE *fp = open_file(tab, const_cast<char *>("r"));
+		temp = (table *)malloc(sizeof(table));
+		fread(temp, sizeof(table), 1, fp);
+
+		//insert into table and write to btree file nodes
+		ret = obj.get_record(id);
+		if (ret == BPTREE_SEARCH_NOT_FOUND) {
+			printf("\nSearching -> NOT FOUND !!");
+			return;
+		}
+		FILE *fpz;
+		char *str1;
+		str1 = (char *)malloc(sizeof(char) * MAX_PATH);
+		sprintf(str1, "table/%s/file%d.dat", tab, ret);
+		fpz = fopen(str1, "r");
+		int c;
+		char d[MAX_NAME];
+		table inp1;
+		FILE *fp = open_file(tab, const_cast<char *>("r"));
+		for (int j = 0; j < inp1.count; j++) {
+			if (inp1.col[j].type == INT) {
+				fread(&c, 1, sizeof(int), fpz);
+				cout << c << "\t";
+			} else if (inp1.col[j].type == VARCHAR) {
+				fread(d, 1, sizeof(char) * MAX_NAME, fpz);
+				cout << d << "\t";
+			}
+		}
+
+		if (remove(("./table/ss/file" + std::to_string(ret) + ".dat").c_str()) == 0) {
+			cout << "删除成功" << endl;
+		} else {
+			cout << "删除失败" << endl;
+		}
+		fclose(fpz);
+		free(str1);
+
+		free(temp);
 	}
 	free(tab);
 }
