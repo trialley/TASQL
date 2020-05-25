@@ -228,10 +228,13 @@ neb::CJsonObject createTableDataNode(int i) {
 			data.Replace(strTraversing, std::string(d));
 		}
 	}
+	TASQL::dataNode ttt(("table/ss/file" + std::to_string(i) + ".dats"), *temp);
 	// data.Add("name", res);
 	// cout << "\n\n";
 	fclose(fpr);
-	return data;  //竟然忘记返回值
+	return ttt.getObj();  //竟然忘记返回值
+
+	// return data;  //竟然忘记返回值
 }
 void createTableNode(int i, neb::CJsonObject &new_note) {
 	// new_note["data"]["name"] += (std::to_string(i) + '\n');

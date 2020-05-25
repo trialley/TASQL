@@ -23,7 +23,7 @@ public:
 			}
 		}
 	}
-	dataNode(std::string& src, table& metai) : _src(src), _meta(metai) {
+	dataNode(std::string&& src, table& metai) : _src(src), _meta(metai) {
 		std::ifstream temp_node(_src);
 		for (int j = 0; j < _meta.count; j++) {
 			if (_meta.col[j].type == INT) {
@@ -36,6 +36,20 @@ public:
 				_data.push_back(temp);
 			}
 		}
+	}
+	neb::CJsonObject getObj() {
+		neb::CJsonObject tempobj;
+		std::ofstream temp_node(_src);
+		for (int j = 0; j < _meta.count; j++) {
+			if (_meta.col[j].type == INT) {
+				int temp = get<int>(_data[j]);
+				tempobj.Add(_meta.col[j].col_name, temp);
+			} else if (_meta.col[j].type == VARCHAR) {
+				std::string temp = get<std::string>(_data[j]);
+				tempobj.Add(_meta.col[j].col_name, temp);
+			}
+		}
+		return tempobj;
 	}
 	~dataNode() {
 		std::ofstream temp_node(_src);
