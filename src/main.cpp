@@ -41,6 +41,7 @@ select the query to implement
 
 int take_input_option() {
 	string option;
+
 	fflush(stdout);
 	fflush(stdin);
 	printf("\n select the query to implement\n");
