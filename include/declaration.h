@@ -79,3 +79,8 @@ neb::CJsonObject getBTree();
 #define LOG \
 	std::cout << __FILE__ << ":" << __LINE__ << ":1 " << __func__ << "() "
 #endif
+
+////////////////////新面向对象
+namespace TASQL {
+class dataNode;
+}

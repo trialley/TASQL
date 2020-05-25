@@ -1,4 +1,6 @@
 #pragma once
+#include <dataNode.h>
+
 #include "BPtree.h"
 #include "declaration.h"
 #include "file_handler.h"
@@ -22,17 +24,17 @@ int search_table(char tab_name[]) {
 	return 0;
 }
 
-void insert_command(char tname[], void *data[], int total) {
-	table *temp;
+void insert_command(char tname[], void **data, int total) {
+	table *table_info;
 	int ret;
 	BPtree obj(tname);
 	//打开数据表元文件
 	FILE *fp = open_file(tname, const_cast<char *>("r"));
-	temp = (table *)malloc(sizeof(table));
-	fread(temp, sizeof(table), 1, fp);
+	table_info = (table *)malloc(sizeof(table));
+	fread(table_info, sizeof(table), 1, fp);
 
 	//插入B+树
-	ret = obj.insert_record(*((int *)data[0]), temp->rec_count);
+	ret = obj.insert_record(*((int *)data[0]), table_info->rec_count);
 	if (ret == 2) {
 		cout << "key already exists\n";
 		cout << "exiting...\n";
@@ -43,10 +45,10 @@ void insert_command(char tname[], void *data[], int total) {
 
 	//更新元数据
 	fp = open_file(tname, const_cast<char *>("w+"));
-	int file_num = temp->rec_count;
-	temp->rec_count = temp->rec_count + 1;
-	temp->data_size = total;
-	fwrite(temp, sizeof(table), 1, fp);
+	int file_num = table_info->rec_count;
+	table_info->rec_count = table_info->rec_count + 1;
+	table_info->data_size = total;
+	fwrite(table_info, sizeof(table), 1, fp);
 	fclose(fp);
 
 	//插入数据项目
@@ -56,18 +58,22 @@ void insert_command(char tname[], void *data[], int total) {
 	FILE *fpr = fopen(str, "w+");
 	int x;
 	char y[MAX_NAME];
-	for (int j = 0; j < temp->count; j++) {
-		if (temp->col[j].type == INT) {
+	for (int j = 0; j < table_info->count; j++) {
+		if (table_info->col[j].type == INT) {
 			x = *(int *)data[j];
 			fwrite(&x, sizeof(int), 1, fpr);
-		} else if (temp->col[j].type == VARCHAR) {
+		} else if (table_info->col[j].type == VARCHAR) {
 			strcpy(y, (char *)data[j]);
 			fwrite(y, sizeof(char) * MAX_NAME, 1, fpr);
 		}
 	}
 	fclose(fpr);
 	free(str);
-	free(temp);
+	TASQL::dataNode("table/" + std::string(tname) + "/file" + std::to_string(file_num) + ".dats", *table_info, data);
+	free(table_info);
+
+	//流式插入数据
+	//////
 }
 
 void insert() {
