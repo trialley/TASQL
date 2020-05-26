@@ -3,6 +3,7 @@
 #pragma once
 
 #include <CJsonObject.h>
+#include <dataNode.h>
 
 #include <filesystem>
 #include <iterator>
@@ -57,28 +58,8 @@ void displayTable() {
 			char d[MAX_NAME];
 			//cout<<"C........"<<c<<endl;
 			for (int i = 0; i < temp->rec_count; i++) {
-				FILE *fpr;
-				char *str;
-				str = (char *)malloc(sizeof(char) * MAX_PATH);
-				sprintf(str, "table/%s/file%d.dat", tab, i);
-				//cout<<str<<endl;
-				fpr = fopen(str, "r");
-				//cout<<*(int *)data1[0]<<" ";
-				//fread(data2,temp->count,tot,fpr);
-				//fread(data2,1,tot,fpr);
-				for (int j = 0; j < temp->count; j++) {
-					if (temp->col[j].type == INT) {
-						fread(&c, 1, sizeof(int), fpr);
-						cout << c << setw(20);
-					} else if (temp->col[j].type == VARCHAR) {
-						fread(d, 1, sizeof(char) * MAX_NAME, fpr);
-						cout << d << setw(20);
-					}
-				}
-				cout << "\n\n";
-
-				free(str);
-				fclose(fpr);
+				TASQL::dataNode("table/" + std::string(tab) + "/file" + std::to_string(i) + ".dats", *temp).out(cout);
+				cout << "\n";
 			}
 			printf("-----------------------------------------------\n");
 			//fclose(fp);

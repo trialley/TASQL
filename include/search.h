@@ -49,26 +49,7 @@ void search() {
 				} else {
 					//printf("\nSearch (%d) exists -> record num = %d", pri_int, ret);
 					printf("\n %d exists \n\n", pri_int);
-					//print the details of the particular row;
-					FILE *fpz;
-					char *str1;
-					printf("\n------------------------------------\n");
-					str1 = (char *)malloc(sizeof(char) * MAX_PATH);
-					sprintf(str1, "table/%s/file%d.dat", tab, ret);
-					fpz = fopen(str1, "r");
-
-					for (int j = 0; j < inp1.count; j++) {
-						if (inp1.col[j].type == INT) {
-							fread(&c, 1, sizeof(int), fpz);
-							cout << c << "\t";
-						} else if (inp1.col[j].type == VARCHAR) {
-							fread(d, 1, sizeof(char) * MAX_NAME, fpz);
-							cout << d << "\t";
-						}
-					}
-					printf("\n------------------------------------\n");
-					fclose(fpz);
-					free(str1);
+					TASQL::dataNode("table/" + std::string(tab) + "/file" + std::to_string(ret) + ".dats", inp1).out(cout);
 				}
 			} else if (inp1.col[0].type == VARCHAR) {
 				cout << "\nenter  key[col 0] to search\n";
@@ -82,26 +63,7 @@ void search() {
 				} else {
 					// printf("\nSearching (%s) -> record num = %d", pri_char, ret);
 					printf("\n%s exists\n\n", pri_char);
-
-					//print the details of the particular row;
-					FILE *fpz;
-					char *str1;
-					str1 = (char *)malloc(sizeof(char) * MAX_PATH);
-					sprintf(str1, "table/%s/file%d.dat", tab, ret);
-					fpz = fopen(str1, "r");
-					printf("\n------------------------------------\n");
-					for (int j = 0; j < inp1.count; j++) {
-						if (inp1.col[j].type == INT) {
-							fread(&c, 1, sizeof(int), fpz);
-							cout << c << "\t";
-						} else if (inp1.col[j].type == VARCHAR) {
-							fread(d, 1, sizeof(char) * MAX_NAME, fpz);
-							cout << d << "\t";
-						}
-					}
-					printf("\n-------------------------------------\n");
-					fclose(fpz);
-					free(str1);
+					TASQL::dataNode("table/" + std::string(tab) + "/file" + std::to_string(ret) + ".dats", inp1).out(cout);
 				}
 			}
 

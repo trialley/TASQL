@@ -1,3 +1,4 @@
+#pragma once
 #include <declaration.h>
 
 #include <iostream>
@@ -37,6 +38,21 @@ public:
 			}
 		}
 	}
+	int getInt(std::string&& in) {
+		for (int j = 0; j < _meta.count; j++) {
+			if (_meta.col[j].col_name == in) {
+				return get<int>(_data[j]);
+			}
+		}
+	}
+	void resetInt(std::string&& in, int newnum) {
+		for (int j = 0; j < _meta.count; j++) {
+			if (_meta.col[j].col_name == in) {
+				get<int>(_data[j]) = newnum;
+				return;
+			}
+		}
+	}
 	neb::CJsonObject getObj() {
 		neb::CJsonObject tempobj;
 		std::ofstream temp_node(_src);
@@ -60,6 +76,17 @@ public:
 			} else if (_meta.col[j].type == VARCHAR) {
 				std::string temp = get<std::string>(_data[j]);
 				temp_node << temp << " ";
+			}
+		}
+	}
+	std::ostream& out(std::ostream& out) {
+		for (int j = 0; j < _meta.count; j++) {
+			if (_meta.col[j].type == INT) {
+				int temp = get<int>(_data[j]);
+				out << temp << " ";
+			} else if (_meta.col[j].type == VARCHAR) {
+				std::string temp = get<std::string>(_data[j]);
+				out << temp << " ";
 			}
 		}
 	}

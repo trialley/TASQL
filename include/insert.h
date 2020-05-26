@@ -52,23 +52,23 @@ void insert_command(char tname[], void **data, int total) {
 	fclose(fp);
 
 	//插入数据项目
-	char *str;
-	str = (char *)malloc(sizeof(char) * MAX_PATH);
-	sprintf(str, "table/%s/file%d.dat", tname, file_num);
-	FILE *fpr = fopen(str, "w+");
-	int x;
-	char y[MAX_NAME];
-	for (int j = 0; j < table_info->count; j++) {
-		if (table_info->col[j].type == INT) {
-			x = *(int *)data[j];
-			fwrite(&x, sizeof(int), 1, fpr);
-		} else if (table_info->col[j].type == VARCHAR) {
-			strcpy(y, (char *)data[j]);
-			fwrite(y, sizeof(char) * MAX_NAME, 1, fpr);
-		}
-	}
-	fclose(fpr);
-	free(str);
+	// char *str;
+	// str = (char *)malloc(sizeof(char) * MAX_PATH);
+	// sprintf(str, "table/%s/file%d.dat", tname, file_num);
+	// FILE *fpr = fopen(str, "w+");
+	// int x;
+	// char y[MAX_NAME];
+	// for (int j = 0; j < table_info->count; j++) {
+	// 	if (table_info->col[j].type == INT) {
+	// 		x = *(int *)data[j];
+	// 		fwrite(&x, sizeof(int), 1, fpr);
+	// 	} else if (table_info->col[j].type == VARCHAR) {
+	// 		strcpy(y, (char *)data[j]);
+	// 		fwrite(y, sizeof(char) * MAX_NAME, 1, fpr);
+	// 	}
+	// }
+	// fclose(fpr);
+	// free(str);
 	TASQL::dataNode("table/" + std::string(tname) + "/file" + std::to_string(file_num) + ".dats", *table_info, data);
 	free(table_info);
 
@@ -257,6 +257,7 @@ void insertObj(neb::CJsonObject &obj) {
 	free(tab);
 }
 
+//修改数值
 void borrowObj(neb::CJsonObject &obj, int dnum, bool isbuy) {
 	int id;
 	std::string tempint;
@@ -293,70 +294,79 @@ void borrowObj(neb::CJsonObject &obj, int dnum, bool isbuy) {
 			printf("\nSearching -> NOT FOUND !!");
 			return;
 		}
-		FILE *fpz;
-		char *str1;
-		str1 = (char *)malloc(sizeof(char) * MAX_PATH);
-		sprintf(str1, "table/%s/file%d.dat", tab, ret);
-		fpz = fopen(str1, "r");
-		int c;
-		char d[MAX_NAME];
+		//修改数值
+		TASQL::dataNode t(("table/" + std::string(tab) + "/file" + std::to_string(ret) + ".dats"), *inp1);
+		if (isbuy) {
+			t.resetInt("bookTotalNum", t.getInt("bookTotalNum") + 1);
+		} else {
+			t.resetInt("bookLeftNum", t.getInt("bookLeftNum") + dnum);
+		}
+		// FILE *fpz;
+		// char *str1;
+		// str1 = (char *)malloc(sizeof(char) * MAX_PATH);
+		// sprintf(str1, "table/%s/file%d.dat", tab, ret);
+		// fpz = fopen(str1, "r");
+		// int c;
+		// char d[MAX_NAME];
 
 		//创建新文件
 		//插入数据项目
-		char *str;
-		str = (char *)malloc(sizeof(char) * MAX_PATH);
-		sprintf(str, "table/ss/file%d.dat1", ret);
+		// char *str;
+		// str = (char *)malloc(sizeof(char) * MAX_PATH);
+		// sprintf(str, "table/ss/file%d.dat1", ret);
 
-		int x;
-		char y[MAX_NAME];
-		int temp_bookleftnum = -1;
-		int temp_booktotalnum = -1;
-		for (int j = 0; j < inp1->count; j++) {
-			if (inp1->col[j].type == INT) {
-				fread(&x, 1, sizeof(int), fpz);
-				if (std::string(inp1->col[j].col_name) == "bookLeftNum") {
-					temp_bookleftnum = x;
-				} else if (std::string(inp1->col[j].col_name) == "bookTotalNum") {
-					temp_booktotalnum = x;
-				}
-			} else if (inp1->col[j].type == VARCHAR) {
-				fread(y, 1, sizeof(char) * MAX_NAME, fpz);
-			}
-		}
-		fclose(fpz);
-		fpz = fopen(str1, "r");		   //z是老文件
-		FILE *fpr = fopen(str, "w+");  //r是新文件
+		// int x;
+		// char y[MAX_NAME];
+		// int temp_bookleftnum = -1;
+		// int temp_booktotalnum = -1;
+		// for (int j = 0; j < inp1->count; j++) {
+		// 	if (inp1->col[j].type == INT) {
+		// 		fread(&x, 1, sizeof(int), fpz);
+		// 		if (std::string(inp1->col[j].col_name) == "bookLeftNum") {
+		// 			temp_bookleftnum = x;
+		// 		} else if (std::string(inp1->col[j].col_name) == "bookTotalNum") {
+		// 			temp_booktotalnum = x;
+		// 		}
+		// 	} else if (inp1->col[j].type == VARCHAR) {
+		// 		fread(y, 1, sizeof(char) * MAX_NAME, fpz);
+		// 	}
+		// }
+		// fclose(fpz);
+		// fpz = fopen(str1, "r");		   //z是老文件
+		// FILE *fpr = fopen(str, "w+");  //r是新文件
 
 		//写新数据
-		for (int j = 0; j < inp1->count; j++) {
-			if (inp1->col[j].type == INT) {
-				fread(&x, 1, sizeof(int), fpz);
-				if (!isbuy && std::string(inp1->col[j].col_name) == "bookLeftNum") {
-					x = std::min(
-						temp_booktotalnum,
-						std::max(temp_bookleftnum + dnum, 0));
-				} else if (isbuy && std::string(inp1->col[j].col_name) == "bookTotalNum") {
-					x = std::max(temp_booktotalnum + dnum, 0);
-				}
+		// for (int j = 0; j < inp1->count; j++) {
+		// 	if (inp1->col[j].type == INT) {
+		// 		fread(&x, 1, sizeof(int), fpz);
+		// 		if (!isbuy && std::string(inp1->col[j].col_name) == "bookLeftNum") {
+		// 			x = std::min(
+		// 				temp_booktotalnum,
+		// 				std::max(temp_bookleftnum + dnum, 0));
+		// 		} else if (isbuy && std::string(inp1->col[j].col_name) == "bookTotalNum") {
+		// 			x = std::max(temp_booktotalnum + dnum, 0);
+		// 		}
 
-				fwrite(&x, sizeof(int), 1, fpr);
-			} else if (inp1->col[j].type == VARCHAR) {
-				fread(y, 1, sizeof(char) * MAX_NAME, fpz);
-				fwrite(y, sizeof(char) * MAX_NAME, 1, fpr);
-			}
-		}
+		// 		fwrite(&x, sizeof(int), 1, fpr);
+		// 	} else if (inp1->col[j].type == VARCHAR) {
+		// 		fread(y, 1, sizeof(char) * MAX_NAME, fpz);
+		// 		fwrite(y, sizeof(char) * MAX_NAME, 1, fpr);
+		// 	}
+		// }
 		//结束
-		if (remove(("./table/ss/file" + std::to_string(ret) + ".dat").c_str()) == 0) {
-			cout << "删除成功" << endl;
-			//str重命名为str1
-			rename(str, str1);
-		} else {
-			cout << "删除失败" << endl;
-		}
-		free(str);
-		fclose(fpz);
-		fclose(fpr);
-		free(str1);
+		// if (remove(("./table/ss/file" + std::to_string(ret) + ".dat").c_str()) == 0) {
+		// 	cout << "删除成功" << endl;
+		// 	//str重命名为str1
+		// 	rename(
+		// 		("./table/ss/file" + std::to_string(ret) + ".dats1").c_str(),
+		// 		("./table/ss/file" + std::to_string(ret) + ".dats").c_str());
+		// } else {
+		// 	cout << "删除失败" << endl;
+		// }
+		// free(str);
+		// fclose(fpz);
+		// fclose(fpr);
+		// free(str1);
 
 		free(inp1);
 	}

@@ -2,7 +2,11 @@
 
 
 
-
+bookID 1 6
+bookName 2 50
+bookAuthor 2 50
+bookLeftNum 1 6
+bookTotalNum 1 6
 
 
 
