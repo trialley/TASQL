@@ -96,20 +96,6 @@ neb::CJsonObject createDataNode(int i) {
 	// printf("\n-----------------------------------------------\n");
 	FILE *fp = open_file("ss", "r");
 	fread(temp, 1, sizeof(table), fp);
-	// fpr = fopen(("table/ss/file" + std::to_string(i) + ".dat").c_str(), "r");
-	// std::string res;
-	// for (int j = 0; j < temp->count; j++) {
-	// 	if (temp->col[j].type == INT) {
-	// 		fread(&c, 1, sizeof(int), fpr);
-	// 		res += (std::to_string(c) += " ");
-	// 	} else if (temp->col[j].type == VARCHAR) {
-	// 		fread(d, 1, sizeof(char) * MAX_NAME, fpr);
-	// 		res += (std::string(d));
-	// 	}
-	// }
-	// data.Add("name", res);
-	// // cout << "\n\n";
-	// fclose(fpr);
 	TASQL::dataNode dnode("table/ss/file" + std::to_string(i) + ".dats", *temp);
 	data.Add("name", dnode.getObj().ToFormattedString());
 	return data;  //竟然忘记返回值
@@ -194,30 +180,12 @@ neb::CJsonObject createTableDataNode(int i) {
 	int tot = 0;
 	char d[MAX_NAME];
 	temp = (table *)malloc(sizeof(table));
-	// printf("\n-----------------------------------------------\n");
 	FILE *fp = open_file("ss", "r");
 	fread(temp, 1, sizeof(table), fp);
-	// fpr = fopen(("table/ss/file" + std::to_string(i) + ".dat").c_str(), "r");
 	std::string res;
 	std::string strTraversing;
-	// for (int j = 0; j < temp->count; j++) {
-	// 	if (temp->col[j].type == INT) {
-	// 		fread(&c, 1, sizeof(int), fpr);
-	// 		data.GetKey(strTraversing);
-	// 		data.Replace(strTraversing, std::to_string(c));
-	// 	} else if (temp->col[j].type == VARCHAR) {
-	// 		fread(d, 1, sizeof(char) * MAX_NAME, fpr);
-	// 		data.GetKey(strTraversing);
-	// 		data.Replace(strTraversing, std::string(d));
-	// 	}
-	// }
 	TASQL::dataNode ttt(("table/ss/file" + std::to_string(i) + ".dats"), *temp);
-	// data.Add("name", res);
-	// cout << "\n\n";
-	// fclose(fpr);
 	return ttt.getObj();  //竟然忘记返回值
-
-	// return data;  //竟然忘记返回值
 }
 void createTableNode(int i, neb::CJsonObject &new_note) {
 	// new_note["data"]["name"] += (std::to_string(i) + '\n');

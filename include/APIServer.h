@@ -2,6 +2,7 @@
 
 #include <CJsonObject.h>
 #include <mongoose.h>
+#include <search.h>
 #include <string.h>
 
 #include <functional>
@@ -10,6 +11,7 @@
 #include <unordered_map>
 #include <unordered_set>
 neb::CJsonObject getTable();
+neb::CJsonObject getItem();
 void deleteId(int id);
 // 定义http返回callback
 typedef void OnRspCallback(mg_connection* c, std::string);
@@ -175,7 +177,9 @@ void APIServer::HandleHttpEvent(mg_connection* connection, http_message* http_re
 	obj.Add("bookTotalNum", bookTotalNum);
 	std::string result;
 
-	if (route_check(http_req, std::string("/getTable"))) {
+	if (route_check(http_req, std::string("/getItem"))) {
+		result = getItem(obj).ToString();
+	} else if (route_check(http_req, std::string("/getTable"))) {
 		result = getTable().ToString();
 	} else if (route_check(http_req, std::string("/getBTree"))) {
 		result = getBTree().ToString();
@@ -183,8 +187,6 @@ void APIServer::HandleHttpEvent(mg_connection* connection, http_message* http_re
 		result = showTables().ToString();
 	} else if (route_check(http_req, std::string("/createItem"))) {	 //采编入库
 		insertObj(obj);
-		borrowObj(obj, 1, true);
-		borrowObj(obj, 1, false);
 
 		result = R"(
 			{

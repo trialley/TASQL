@@ -23,8 +23,8 @@ int search_table(char tab_name[]) {
 		return 0;
 	return 0;
 }
-
-void insert_command(char tname[], void **data, int total) {
+void borrowObj(neb::CJsonObject &obj, int dnum, bool isbuy);
+void insert_command(char tname[], void **data, int total, neb::CJsonObject &obja) {
 	table *table_info;
 	int ret;
 	BPtree obj(tname);
@@ -37,6 +37,8 @@ void insert_command(char tname[], void **data, int total) {
 	ret = obj.insert_record(*((int *)data[0]), table_info->rec_count);
 	if (ret == 2) {
 		cout << "key already exists\n";
+		borrowObj(obja, 1, true);
+		borrowObj(obja, 1, false);
 		cout << "exiting...\n";
 		return;
 	}
@@ -159,7 +161,8 @@ void insert() {
 				size++;
 			}
 		}
-		insert_command(tab, data, total);
+		neb::CJsonObject a("{}");
+		insert_command(tab, data, total, a);
 	}
 	free(tab);
 }
@@ -252,7 +255,7 @@ void insertObj(neb::CJsonObject &obj) {
 				size++;
 			}
 		}
-		insert_command(tab, data, total);
+		insert_command(tab, data, total, obj);
 	}
 	free(tab);
 }

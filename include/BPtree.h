@@ -496,7 +496,7 @@ int BPtree::delete_record(int primary_key) {
 			n.delete_key(primary_key);
 			write_node(curr_node, n);
 
-			father_node.keys[curr_node_rank - 1] = new_up_key;	//父节点更新
+			father_node.keys[curr_node_rank - 2] = new_up_key;	//父节点更新
 			write_node(pnode_key, father_node);
 			return BPTREE_INSERT_SUCCESS;
 		}
@@ -514,7 +514,7 @@ int BPtree::delete_record(int primary_key) {
 			new_left_key = rightnode.keys[0];
 			new_left_pointer = rightnode.pointers[0];
 
-			new_up_key = rightnode.keys[1];
+			new_up_key = rightnode.keys[0];
 
 			rightnode.delete_key(new_left_key);	 //删除借走的key
 			write_node(rightnode_key, rightnode);
@@ -525,7 +525,7 @@ int BPtree::delete_record(int primary_key) {
 			n.delete_key(primary_key);
 			write_node(curr_node, n);
 
-			father_node.keys[curr_node_rank + 1] = new_up_key;	//父节点更新
+			father_node.keys[curr_node_rank - 1] = new_up_key;	//父节点更新
 			write_node(pnode_key, father_node);
 			return BPTREE_INSERT_SUCCESS;
 		}

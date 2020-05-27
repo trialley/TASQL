@@ -1,7 +1,9 @@
 #pragma once
 
-#include "declaration.h"
+#include <dataNode.h>
+#include <insert.h>
 
+#include "declaration.h"
 void search() {
 	//search for particular table or any specific entry inside table
 	cout << "1.search table\n2.search particular entry in table\n\n";
@@ -75,4 +77,20 @@ void search() {
 		return;
 	}
 	free(tab);
+}
+
+neb::CJsonObject getItem(neb::CJsonObject &obj) {
+	BPtree mytree("ss");
+	std::string key;
+	obj.Get("bookID", key);
+	int ret = mytree.get_record(atoi(key.c_str()));
+	if (ret < 0) {
+		return neb::CJsonObject(R"({"statu":"404","info":"没有找到目标数据"})");
+	}
+	table inp1;
+	FILE *fp = open_file("ss", const_cast<char *>("r"));
+	int i = 0;
+	fread(&inp1, sizeof(table), 1, fp);
+
+	return TASQL::dataNode(("table/ss/file" + std::to_string(ret) + ".dats"), inp1).getObj();
 }
