@@ -44,6 +44,7 @@ public:
 				return get<int>(_data[j]);
 			}
 		}
+		return -1;
 	}
 	void resetInt(std::string&& in, int newnum) {
 		for (int j = 0; j < _meta.count; j++) {
@@ -52,6 +53,7 @@ public:
 				return;
 			}
 		}
+		return;
 	}
 	neb::CJsonObject getObj() {
 		neb::CJsonObject tempobj;
@@ -89,6 +91,7 @@ public:
 				out << temp << " ";
 			}
 		}
+		return out;
 	}
 };	// namespace TASQL
 }  // namespace TASQL

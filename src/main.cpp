@@ -150,6 +150,7 @@ int apiserver() {
 	auto server = std::shared_ptr<APIServer>(new APIServer);
 	server->Init(port);
 	server->Start();
+	return 0;
 }
 
 int main(int argc, char* argv[]) {

@@ -66,13 +66,12 @@ public:
 				keys.begin());
 	}
 
-	/*Function that performs binary search and returns
-       boolean result */
+	/*找到这个叶子节点，看这个叶子里是不是有目标关键词 */
 	int search_key(int search_key) {
 		return std::binary_search(keys.begin(), keys.end(), search_key);
 	}
 
-	//Function to check if node is full
+	//插入元素需要检查是否需要分裂
 	bool full() {
 		if (leaf) {
 			if (pointers.size() < BPTREE_MAX_KEYS_PER_NODE - 1)
@@ -280,12 +279,12 @@ public:
 	int delete_record(int primary_key);
 	Btreenode search_leaf(int primary_key);
 	int get_record(int primary_key);
+	bool _borrowFromLeft();
 };
 
 /* Function that traverses the BPtree and returns the leaf node
     where 'primary_key' record should exist, if it exist at all */
-Btreenode
-BPtree::search_leaf(int primary_key) {
+Btreenode BPtree::search_leaf(int primary_key) {
 	Btreenode n(true);
 	int q, curr_node = root_num;
 	read_node(curr_node, n);
@@ -426,33 +425,41 @@ int BPtree::insert_record(int primary_key, int record_num) {
 	return BPTREE_INSERT_SUCCESS;
 }
 
+bool BPtree::_borrowFromLeft() {
+}
 int BPtree::delete_record(int primary_key) {
 	Btreenode n(true);
+	Btreenode father_node(true);
 	int q, j, prop_n, prop_k, prop_new, curr_node = root_num;
 	bool finish = false;
 	std::stack<int> S;
 
 	read_node(curr_node, n);
-
+	int letfnode_key, rightnode_key;
+	int pnode_key;
+	int curr_node_rank;
 	//递归获得叶子节点
 	while (!n.isleaf()) {
-		S.push(curr_node);							  //加入栈中以备分割
-		q = n.num_pointers();						  //获得指针数量
-		if (primary_key <= n.get_key(1)) {			  //小于等于倒数第一个则进入前一个节点
+		pnode_key = curr_node;
+		S.push(curr_node);					//加入栈中以备分割
+		q = n.num_pointers();				//获得指针数量
+		if (primary_key <= n.get_key(1)) {	//小于等于倒数第一个则进入前一个节点
+			curr_node_rank = 1;
 			curr_node = n.get_pointer(1);			  //下沉
 		} else if (primary_key > n.get_key(q - 1)) {  //大于倒数第二个则进之后的节点
+			curr_node_rank = q;
 			curr_node = n.get_pointer(q);
 		} else {
+			curr_node_rank = n.get_next_key(primary_key) + 1;
 			curr_node = n.get_pointer(n.get_next_key(primary_key) + 1);	 //获取下沉位置
 		}
+		father_node = n;
 		read_node(curr_node, n);  //更新当前节点
 	}
 
-	//Here n is Leaf Node
-	//if key exist exist then return;
+	//判断叶子节点中是否含有目标节点
 	if (!n.search_key(primary_key)) {  //id存在于当前节点
 		std::cout << "节点中不存在目标id，无法删除" << std::endl;
-
 		return BPTREE_INSERT_ERROR_EXIST;
 	}
 	std::cout << "节点中存在目标id，开始删除" << std::endl;
@@ -465,6 +472,65 @@ int BPtree::delete_record(int primary_key) {
 		update_meta_data();	 //更新节点数和根节点编号
 		return BPTREE_INSERT_SUCCESS;
 	}
+	//从左兄弟借单位
+	if (curr_node_rank >= 1) {
+		int new_up_key;
+		int new_right_key;
+		int new_right_pointer;
+
+		letfnode_key = father_node.get_pointer(curr_node_rank - 1);
+		Btreenode leftnode(false);
+		read_node(letfnode_key, leftnode);
+		if (!leftnode.toMerge()) {	//如果可以借来
+			new_right_key = leftnode.keys[leftnode.keys.size() - 1];
+			new_right_pointer = leftnode.pointers[leftnode.keys.size() - 1];
+
+			new_up_key = leftnode.keys[leftnode.keys.size() - 2];
+
+			leftnode.delete_key(new_right_key);	 //删除借走的key
+			write_node(letfnode_key, leftnode);
+
+			n.keys.insert(n.keys.begin(), new_right_key);  //加上拿到的key
+			n.pointers.insert(n.pointers.begin(), new_right_pointer);
+
+			n.delete_key(primary_key);
+			write_node(curr_node, n);
+
+			father_node.keys[curr_node_rank - 1] = new_up_key;	//父节点更新
+			write_node(pnode_key, father_node);
+		}
+	}
+	// //从右兄弟借单位
+	if (curr_node_rank < father_node.pointers.size()) {
+		int new_up_key;
+		int new_left_key;
+		int new_left_pointer;
+
+		rightnode_key = father_node.get_pointer(curr_node_rank - 1);
+		Btreenode leftnode(false);
+		read_node(rightnode_key, leftnode);
+		if (!leftnode.toMerge()) {	//如果可以借来
+			new_left_key = leftnode.keys[leftnode.keys.size() - 1];
+			new_left_pointer = leftnode.pointers[leftnode.keys.size() - 1];
+
+			new_up_key = leftnode.keys[leftnode.keys.size() - 2];
+
+			leftnode.delete_key(new_left_key);	//删除借走的key
+			write_node(rightnode_key, leftnode);
+
+			n.keys.insert(n.keys.begin(), new_left_key);  //加上拿到的key
+			n.pointers.insert(n.pointers.begin(), new_left_pointer);
+
+			n.delete_key(primary_key);
+			write_node(curr_node, n);
+
+			father_node.keys[curr_node_rank - 1] = new_up_key;	//父节点更新
+			write_node(pnode_key, father_node);
+		}
+	}
+
+	// //合并与删除节点
+	// reverseDel();
 	update_meta_data();
 	return BPTREE_INSERT_SUCCESS;
 }

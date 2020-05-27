@@ -183,6 +183,9 @@ void APIServer::HandleHttpEvent(mg_connection* connection, http_message* http_re
 		result = showTables().ToString();
 	} else if (route_check(http_req, std::string("/createItem"))) {	 //采编入库
 		insertObj(obj);
+		borrowObj(obj, 1, true);
+		borrowObj(obj, 1, false);
+
 		result = R"(
 			{
 				"type":"info",

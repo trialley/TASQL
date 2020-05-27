@@ -1,7 +1,7 @@
 #pragma once
 #include "declaration.h"
 
-FILE *open_file(char t_name[], char perm[]) {
+FILE *open_file(char *t_name, char *perm) {
 	FILE *fp;
 	struct stat st = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	char *name = (char *)malloc(sizeof(char) * (2 * MAX_NAME + 15));
