@@ -9,6 +9,8 @@ public:
 	int next_node;
 
 public:
+	void delete_key_no_leaf(int curr_node_rank, int which);
+
 	Btreenode();
 	Btreenode(bool makeleaf) {
 		leaf = makeleaf;
@@ -496,6 +498,7 @@ int BPtree::delete_record(int primary_key) {
 
 			father_node.keys[curr_node_rank - 1] = new_up_key;	//父节点更新
 			write_node(pnode_key, father_node);
+			return BPTREE_INSERT_SUCCESS;
 		}
 	}
 	// //从右兄弟借单位
@@ -524,11 +527,51 @@ int BPtree::delete_record(int primary_key) {
 
 			father_node.keys[curr_node_rank + 1] = new_up_key;	//父节点更新
 			write_node(pnode_key, father_node);
+			return BPTREE_INSERT_SUCCESS;
 		}
 	}
 
-	// //合并与删除节点
-	// reverseDel();
+	// //合并节点
+	if (curr_node_rank < father_node.pointers.size()) {	 //有右
+		rightnode_key = father_node.get_pointer(curr_node_rank + 1);
+		Btreenode rightnode(false);
+		read_node(rightnode_key, rightnode);
+
+		n.keys.insert(n.keys.end(), rightnode.keys.begin(), rightnode.keys.end());
+		n.pointers.insert(n.pointers.end(), rightnode.pointers.begin(), rightnode.pointers.end());
+		n.set_next(-1);
+		write_node(curr_node, n);
+
+		// remove("table/ss/tree/tree" + std::to_string(rightnode_key) + ".dat")
+
+		father_node.delete_key_no_leaf(curr_node_rank, +1);	 //删除两子节点中间的分割id
+		write_node(pnode_key, father_node);
+
+	} else if (curr_node_rank >= 1) {  //有左
+		letfnode_key = father_node.get_pointer(curr_node_rank - 1);
+		Btreenode leftnode(false);
+		read_node(letfnode_key, leftnode);
+
+		n.keys.insert(n.keys.begin(), leftnode.keys.begin(), leftnode.keys.end());
+		n.pointers.insert(n.pointers.begin(), leftnode.pointers.begin(), leftnode.pointers.end());
+		write_node(curr_node, n);
+
+		father_node.delete_key_no_leaf(curr_node_rank, -1);	 //删除两子节点中间的分割id
+		write_node(pnode_key, father_node);
+	}
+
 	update_meta_data();
 	return BPTREE_INSERT_SUCCESS;
+}
+
+void Btreenode::delete_key_no_leaf(int curr_node_rank, int which) {
+	if (which == 1) {
+		keys.erase(keys.begin() + curr_node_rank - 1);
+		pointers.erase(pointers.begin() + curr_node_rank - 1 + 1);
+	} else {
+		keys.erase(keys.begin() + curr_node_rank - 2);
+		pointers.erase(pointers.begin() + curr_node_rank - 2);
+	}
+
+	return;
 }
