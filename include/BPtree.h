@@ -425,8 +425,6 @@ int BPtree::insert_record(int primary_key, int record_num) {
 	return BPTREE_INSERT_SUCCESS;
 }
 
-bool BPtree::_borrowFromLeft() {
-}
 int BPtree::delete_record(int primary_key) {
 	Btreenode n(true);
 	Btreenode father_node(true);
@@ -506,25 +504,25 @@ int BPtree::delete_record(int primary_key) {
 		int new_left_key;
 		int new_left_pointer;
 
-		rightnode_key = father_node.get_pointer(curr_node_rank - 1);
-		Btreenode leftnode(false);
-		read_node(rightnode_key, leftnode);
-		if (!leftnode.toMerge()) {	//如果可以借来
-			new_left_key = leftnode.keys[leftnode.keys.size() - 1];
-			new_left_pointer = leftnode.pointers[leftnode.keys.size() - 1];
+		rightnode_key = father_node.get_pointer(curr_node_rank + 1);
+		Btreenode rightnode(false);
+		read_node(rightnode_key, rightnode);
+		if (!rightnode.toMerge()) {	 //如果可以借来
+			new_left_key = rightnode.keys[0];
+			new_left_pointer = rightnode.pointers[0];
 
-			new_up_key = leftnode.keys[leftnode.keys.size() - 2];
+			new_up_key = rightnode.keys[1];
 
-			leftnode.delete_key(new_left_key);	//删除借走的key
-			write_node(rightnode_key, leftnode);
+			rightnode.delete_key(new_left_key);	 //删除借走的key
+			write_node(rightnode_key, rightnode);
 
-			n.keys.insert(n.keys.begin(), new_left_key);  //加上拿到的key
-			n.pointers.insert(n.pointers.begin(), new_left_pointer);
+			n.keys.insert(n.keys.end(), new_left_key);	//加上拿到的key
+			n.pointers.insert(n.pointers.end(), new_left_pointer);
 
 			n.delete_key(primary_key);
 			write_node(curr_node, n);
 
-			father_node.keys[curr_node_rank - 1] = new_up_key;	//父节点更新
+			father_node.keys[curr_node_rank + 1] = new_up_key;	//父节点更新
 			write_node(pnode_key, father_node);
 		}
 	}
